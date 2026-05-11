@@ -22,11 +22,5 @@ public class ControladorPrincipal {
     public String register() {
 
         return "register/register";
+        }
     }
-
-    @GetMapping("/dashboard")
-    public String dashboard() {
-
-        return "dashboard/dashboard";
-    }
-}

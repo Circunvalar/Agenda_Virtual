@@ -1,0 +1,139 @@
+package com.circunvalar.edu.co.agendavirtual.modulos.eventos.servicios;
+
+import com.circunvalar.edu.co.agendavirtual.modulos.eventos.dtos.EventoRequestDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.eventos.dtos.EventoResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.eventos.entidades.EstadoEvento;
+import com.circunvalar.edu.co.agendavirtual.modulos.eventos.entidades.Evento;
+import com.circunvalar.edu.co.agendavirtual.modulos.eventos.repositorios.EventoRepositorio;
+import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
+import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class EventoServicio {
+
+    private final EventoRepositorio eventoRepositorio;
+
+    private final UsuarioRepositorio usuarioRepositorio;
+
+    public Evento crearEvento(
+            EventoRequestDTO dto,
+            String username
+    ) {
+
+        Usuario creador = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Usuario> invitados = Collections.emptyList();
+
+        if (dto.getInvitadosIds() != null
+                && !dto.getInvitadosIds().isEmpty()) {
+
+            invitados = usuarioRepositorio
+                    .findAllById(dto.getInvitadosIds());
+        }
+
+        Evento evento = Evento.builder()
+                .titulo(dto.getTitulo())
+                .descripcion(dto.getDescripcion())
+                .fechaInicio(dto.getFechaInicio())
+                .fechaFin(dto.getFechaFin())
+                .todoElDia(
+                        dto.getTodoElDia() != null
+                                ? dto.getTodoElDia()
+                                : false
+                )
+                .horaInicio(dto.getHoraInicio())
+                .horaFin(dto.getHoraFin())
+                .ubicacion(dto.getUbicacion())
+                .color(
+                        dto.getColor() != null
+                                ? dto.getColor()
+                                : "#6366f1"
+                )
+                .estado(
+                        dto.getEstado() != null
+                                ? dto.getEstado()
+                                : EstadoEvento.PENDIENTE
+                )
+                .creador(creador)
+                .invitados(invitados)
+                .build();
+
+        return eventoRepositorio.save(evento);
+    }
+
+    public List<Evento> obtenerEventosUsuario(
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        return eventoRepositorio.findByCreador(usuario);
+    }
+
+    public void eliminarEvento(
+            String id,
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        Evento evento = eventoRepositorio
+                .findById(UUID.fromString(id))
+                .orElseThrow();
+
+        if (!evento.getCreador()
+                .getId()
+                .equals(usuario.getId())) {
+
+            throw new RuntimeException(
+                    "No autorizado"
+            );
+        }
+
+        eventoRepositorio.delete(evento);
+    }
+
+    public List<EventoResponseDTO> obtenerEventosDelUsuario(
+            UUID usuarioId
+    ) {
+
+        List<Evento> eventos =
+                eventoRepositorio.findByCreador(usuarioId);
+
+        return eventos.stream()
+                .map(this::convertirAResponseDTO)
+                .toList();
+    }
+
+    private EventoResponseDTO convertirAResponseDTO(
+            Evento evento
+    ) {
+
+        return EventoResponseDTO.builder()
+                .id(evento.getId())
+                .titulo(evento.getTitulo())
+                .descripcion(evento.getDescripcion())
+                .fechaInicio(evento.getFechaInicio())
+                .fechaFin(evento.getFechaFin())
+                .todoElDia(evento.getTodoElDia())
+                .horaInicio(evento.getHoraInicio())
+                .horaFin(evento.getHoraFin())
+                .ubicacion(evento.getUbicacion())
+                .color(evento.getColor())
+                .estado(evento.getEstado())
+                .build();
+    }
+}

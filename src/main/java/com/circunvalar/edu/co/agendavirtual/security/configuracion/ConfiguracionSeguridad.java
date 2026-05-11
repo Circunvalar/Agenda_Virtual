@@ -2,12 +2,13 @@ package com.circunvalar.edu.co.agendavirtual.security.configuracion;
 
 import com.circunvalar.edu.co.agendavirtual.security.servicios.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -43,8 +44,16 @@ public class ConfiguracionSeguridad {
                         .requestMatchers("/admin/**")
                         .hasRole("ADMINISTRADOR")
 
-                        .requestMatchers("/dashboard/**")
-                        .hasAnyRole("USUARIO", "ADMINISTRADOR")
+                        .requestMatchers(
+                                "/dashboard/**",
+                                "/eventos/**",
+                                "/recordatorios/**",
+                                "/tareas/**"
+                        )
+                        .hasAnyRole(
+                                "USUARIO",
+                                "ADMINISTRADOR"
+                        )
 
                         .anyRequest()
                         .authenticated()

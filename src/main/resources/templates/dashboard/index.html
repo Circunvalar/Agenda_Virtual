@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Agenda Virtual</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+        *{
+            font-family:'Inter',sans-serif;
+        }
+
+        html{
+            transition:background .3s,color .3s;
+        }
+
+        .glass{
+            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,.7);
+        }
+
+        .dark .glass{
+            background: rgba(15,23,42,.7);
+        }
+
+        .card-hover{
+            transition:.3s;
+        }
+
+        .card-hover:hover{
+            transform:translateY(-5px);
+        }
+
+        .fade-in{
+            animation:fade .7s ease;
+        }
+
+        @keyframes fade{
+            from{
+                opacity:0;
+                transform:translateY(20px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-white min-h-screen transition-all">
+
+<div class="flex min-h-screen">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 hidden lg:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+
+        <div class="p-8 border-b border-slate-200 dark:border-slate-800">
+            <h1 class="text-2xl font-bold text-indigo-600">
+                Agenda Virtual
+            </h1>
+
+            <p class="text-sm text-slate-500 mt-2">
+                Organiza tu vida diaria
+            </p>
+        </div>
+
+        <nav class="flex-1 p-5 space-y-3">
+
+            <a href="/dashboard"
+               class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/20">
+
+                <span>🏠</span>
+                Dashboard
+            </a>
+
+            <a href="/eventos"
+               class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+
+                <span>📅</span>
+                Eventos
+            </a>
+
+            <a href="/tareas"
+               class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+
+                <span>✅</span>
+                Tareas
+            </a>
+
+            <a href="/recordatorios"
+               class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+
+                <span>🔔</span>
+                Recordatorios
+            </a>
+
+        </nav>
+
+        <div class="p-5 border-t border-slate-200 dark:border-slate-800">
+
+            <a href="/logout"
+               class="w-full flex justify-center items-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-2xl transition">
+
+                🚪 Cerrar sesión
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-6 lg:p-10 fade-in">
+
+        <!-- TOPBAR -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+            <div>
+                <h2 class="text-4xl font-bold">
+                    Bienvenido 👋
+                </h2>
+
+                <p class="text-slate-500 dark:text-slate-400 mt-2">
+                    Gestiona tus eventos, tareas y recordatorios fácilmente.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <button onclick="toggleTheme()"
+                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-5 py-3 rounded-2xl shadow-sm hover:scale-105 transition">
+
+                    🌙 / ☀️
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+
+            <a href="/eventos"
+               class="card-hover rounded-3xl p-7 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-xl">
+
+                <div class="text-5xl mb-4">
+                    📅
+                </div>
+
+                <h3 class="text-2xl font-bold">
+                    Eventos
+                </h3>
+
+                <p class="mt-2 text-indigo-100">
+                    Gestiona reuniones, citas y eventos de varios días.
+                </p>
+
+            </a>
+
+            <a href="/tareas"
+               class="card-hover rounded-3xl p-7 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-xl">
+
+                <div class="text-5xl mb-4">
+                    ✅
+                </div>
+
+                <h3 class="text-2xl font-bold">
+                    Tareas
+                </h3>
+
+                <p class="mt-2 text-emerald-100">
+                    Organiza actividades pendientes y prioridades.
+                </p>
+
+            </a>
+
+            <a href="/recordatorios"
+               class="card-hover rounded-3xl p-7 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xl">
+
+                <div class="text-5xl mb-4">
+                    🔔
+                </div>
+
+                <h3 class="text-2xl font-bold">
+                    Recordatorios
+                </h3>
+
+                <p class="mt-2 text-orange-100">
+                    Programa alertas importantes y repetitivas.
+                </p>
+
+            </a>
+
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-10">
+
+            <div class="glass rounded-3xl p-6 border border-white/20 shadow-lg card-hover">
+
+                <p class="text-slate-500 dark:text-slate-400">
+                    Eventos
+                </p>
+
+                <h3 class="text-4xl font-bold mt-3">
+                    12
+                </h3>
+
+            </div>
+
+            <div class="glass rounded-3xl p-6 border border-white/20 shadow-lg card-hover">
+
+                <p class="text-slate-500 dark:text-slate-400">
+                    Tareas Pendientes
+                </p>
+
+                <h3 class="text-4xl font-bold mt-3">
+                    8
+                </h3>
+
+            </div>
+
+            <div class="glass rounded-3xl p-6 border border-white/20 shadow-lg card-hover">
+
+                <p class="text-slate-500 dark:text-slate-400">
+                    Recordatorios
+                </p>
+
+                <h3 class="text-4xl font-bold mt-3">
+                    5
+                </h3>
+
+            </div>
+
+            <div class="glass rounded-3xl p-6 border border-white/20 shadow-lg card-hover">
+
+                <p class="text-slate-500 dark:text-slate-400">
+                    Productividad
+                </p>
+
+                <h3 class="text-4xl font-bold mt-3">
+                    92%
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- INFO SECTION -->
+        <div class="mt-10 grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
+
+                <h3 class="text-2xl font-bold mb-5">
+                    Próximos eventos
+                </h3>
+
+                <div class="space-y-4">
+
+                    <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl">
+
+                        <div>
+                            <p class="font-semibold">
+                                Reunión de proyecto
+                            </p>
+
+                            <span class="text-sm text-slate-500">
+                                10 Mayo - 2:00 PM
+                            </span>
+                        </div>
+
+                        <span class="bg-indigo-500 text-white px-3 py-1 rounded-full text-sm">
+                            Trabajo
+                        </span>
+
+                    </div>
+
+                    <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl">
+
+                        <div>
+                            <p class="font-semibold">
+                                Cumpleaños
+                            </p>
+
+                            <span class="text-sm text-slate-500">
+                                12 Mayo - Todo el día
+                            </span>
+                        </div>
+
+                        <span class="bg-pink-500 text-white px-3 py-1 rounded-full text-sm">
+                            Personal
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
+
+                <h3 class="text-2xl font-bold mb-5">
+                    Actividad reciente
+                </h3>
+
+                <div class="space-y-5">
+
+                    <div class="flex gap-4">
+
+                        <div class="w-3 h-3 rounded-full bg-indigo-500 mt-2"></div>
+
+                        <div>
+                            <p class="font-medium">
+                                Creaste un nuevo evento
+                            </p>
+
+                            <span class="text-sm text-slate-500">
+                                Hace 2 horas
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="flex gap-4">
+
+                        <div class="w-3 h-3 rounded-full bg-emerald-500 mt-2"></div>
+
+                        <div>
+                            <p class="font-medium">
+                                Completaste una tarea
+                            </p>
+
+                            <span class="text-sm text-slate-500">
+                                Hace 5 horas
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="flex gap-4">
+
+                        <div class="w-3 h-3 rounded-full bg-orange-500 mt-2"></div>
+
+                        <div>
+                            <p class="font-medium">
+                                Nuevo recordatorio agregado
+                            </p>
+
+                            <span class="text-sm text-slate-500">
+                                Ayer
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+
+    if(localStorage.getItem("theme")==="dark"){
+        document.documentElement.classList.add("dark");
+    }
+
+    function toggleTheme(){
+
+        document.documentElement.classList.toggle("dark");
+
+        if(document.documentElement.classList.contains("dark")){
+            localStorage.setItem("theme","dark");
+        }else{
+            localStorage.setItem("theme","light");
+        }
+
+    }
+
+</script>
+
+</body>
+</html>

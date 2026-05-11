@@ -8,8 +8,14 @@ import lombok.*;
 @Table(
         name = "usuarios",
         indexes = {
-                @Index(name = "idx_user_username", columnList = "username"),
-                @Index(name = "idx_user_email", columnList = "email")
+                @Index(
+                        name = "idx_user_username",
+                        columnList = "nombre_de_usuario"
+                ),
+                @Index(
+                        name = "idx_user_email",
+                        columnList = "correo_electronico"
+                )
         }
 )
 @Getter
