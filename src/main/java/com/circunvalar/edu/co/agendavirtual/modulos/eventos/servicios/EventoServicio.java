@@ -10,6 +10,7 @@ import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.Usuari
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -31,10 +32,12 @@ public class EventoServicio {
                 .findByNombreDeUsuario(username)
                 .orElseThrow();
 
-        List<Usuario> invitados = Collections.emptyList();
+        List<Usuario> invitados = new ArrayList<>();
 
-        if (dto.getInvitadosIds() != null
-                && !dto.getInvitadosIds().isEmpty()) {
+        if (
+                dto.getInvitadosIds() != null &&
+                        !dto.getInvitadosIds().isEmpty()
+        ) {
 
             invitados = usuarioRepositorio
                     .findAllById(dto.getInvitadosIds());
@@ -63,6 +66,7 @@ public class EventoServicio {
                                 ? dto.getEstado()
                                 : EstadoEvento.PENDIENTE
                 )
+                .invitados(invitados)
                 .creador(creador)
                 .invitados(invitados)
                 .build();
@@ -136,4 +140,54 @@ public class EventoServicio {
                 .estado(evento.getEstado())
                 .build();
     }
+    public void actualizarEvento(
+            UUID id,
+            Evento eventoActualizado,
+            List<UUID> invitadosIds,
+            String username
+    ) {
+
+        Evento evento = eventoRepositorio
+                .findById(id)
+                .orElseThrow();
+
+        evento.setTitulo(
+                eventoActualizado.getTitulo()
+        );
+
+        evento.setDescripcion(
+                eventoActualizado.getDescripcion()
+        );
+
+        evento.setFechaInicio(
+                eventoActualizado.getFechaInicio()
+        );
+
+        evento.setFechaFin(
+                eventoActualizado.getFechaFin()
+        );
+
+        evento.setHoraInicio(
+                eventoActualizado.getHoraInicio()
+        );
+
+        evento.setHoraFin(
+                eventoActualizado.getHoraFin()
+        );
+
+        evento.setTodoElDia(
+                eventoActualizado.getTodoElDia()
+        );
+
+        evento.setUbicacion(
+                eventoActualizado.getUbicacion()
+        );
+
+        evento.setColor(
+                eventoActualizado.getColor()
+        );
+
+        eventoRepositorio.save(evento);
+    }
+
 }

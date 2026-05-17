@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<body>
+
+<div
+        th:fragment="sidebar(activePage)"
+        class="sidebar"
+>
+
+    <div class="sidebar-top">
+
+        <h2 class="logo-text">
+            Agenda Virtual
+        </h2>
+
+        <p class="logo-subtitle">
+            Panel principal
+        </p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <a
+                th:href="@{/dashboard}"
+                class="nav-item"
+                th:classappend="${activePage == 'dashboard'} ? ' nav-active'"
+        >
+            🏠 Dashboard
+        </a>
+
+        <a
+                th:href="@{/eventos}"
+                class="nav-item"
+                th:classappend="${activePage == 'eventos'} ? ' nav-active'"
+        >
+            📅 Eventos
+        </a>
+
+        <a
+                th:href="@{/contactos}"
+                class="nav-item"
+                th:classappend="${activePage == 'contactos'} ? ' nav-active'"
+        >
+            👥 Contactos
+        </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+
+        <a
+                th:href="@{/logout}"
+                class="logout-btn"
+        >
+            Cerrar sesión
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

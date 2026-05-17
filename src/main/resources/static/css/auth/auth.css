@@ -1,0 +1,295 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+:root{
+    --bg:#0f172a;
+    --bg-secondary:#111827;
+
+    --card:#ffffff;
+    --card-dark:#1e293b;
+
+    --text:#0f172a;
+    --text-dark:#f8fafc;
+
+    --text-muted:#64748b;
+    --text-muted-dark:#94a3b8;
+
+    --primary:#4f46e5;
+    --primary-hover:#4338ca;
+
+    --border:#e2e8f0;
+    --border-dark:#334155;
+
+    --input:#f8fafc;
+    --input-dark:#0f172a;
+
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+    --shadow-dark:0 10px 30px rgba(0,0,0,.45);
+}
+
+[data-theme="dark"]{
+    --bg:#020617;
+    --bg-secondary:#0f172a;
+
+    --card:#111827;
+    --card-dark:#111827;
+
+    --text:#f8fafc;
+    --text-dark:#f8fafc;
+
+    --text-muted:#94a3b8;
+    --text-muted-dark:#94a3b8;
+
+    --border:#1e293b;
+    --border-dark:#1e293b;
+
+    --input:#0f172a;
+    --input-dark:#0f172a;
+
+    --shadow:0 10px 30px rgba(0,0,0,.55);
+}
+
+body{
+    background:
+            radial-gradient(circle at top left, rgba(79,70,229,.15), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(99,102,241,.12), transparent 30%),
+            var(--bg);
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:30px;
+
+    color:var(--text);
+
+    transition:.3s ease;
+}
+
+.auth-wrapper{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.auth-card{
+    width:100%;
+    max-width:480px;
+
+    background:rgba(255,255,255,.92);
+    border:1px solid var(--border);
+
+    backdrop-filter:blur(16px);
+
+    border-radius:32px;
+
+    padding:45px;
+
+    box-shadow:var(--shadow);
+
+    animation:fade .7s ease;
+
+    transition:.3s ease;
+}
+
+[data-theme="dark"] .auth-card{
+    background:rgba(17,24,39,.92);
+    border:1px solid var(--border-dark);
+    box-shadow:var(--shadow-dark);
+}
+
+.logo{
+    width:70px;
+    height:70px;
+
+    margin:0 auto 25px;
+
+    border-radius:22px;
+
+    background:linear-gradient(
+            135deg,
+            var(--primary),
+            #6366f1
+    );
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:2rem;
+}
+
+.auth-title{
+    text-align:center;
+    font-size:2.1rem;
+    font-weight:700;
+
+    margin-bottom:12px;
+}
+
+.auth-subtitle{
+    text-align:center;
+    color:var(--text-muted);
+
+    line-height:1.6;
+
+    margin-bottom:35px;
+}
+
+.input-group{
+    margin-bottom:20px;
+}
+
+.input-label{
+    display:block;
+
+    margin-bottom:10px;
+
+    font-size:.95rem;
+    font-weight:600;
+}
+
+.input-style{
+    width:100%;
+
+    padding:16px 18px;
+
+    border-radius:16px;
+
+    border:1px solid var(--border);
+
+    background:var(--input);
+
+    color:var(--text);
+
+    outline:none;
+
+    transition:.3s ease;
+}
+
+[data-theme="dark"] .input-style{
+    background:var(--input-dark);
+    border:1px solid var(--border-dark);
+}
+
+.input-style:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(79,70,229,.12);
+}
+
+.submit-btn{
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:linear-gradient(
+            135deg,
+            var(--primary),
+            #6366f1
+    );
+
+    color:white;
+
+    font-size:1rem;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s ease;
+
+    margin-top:10px;
+}
+
+.submit-btn:hover{
+    transform:translateY(-2px);
+    opacity:.95;
+}
+
+.auth-footer{
+    margin-top:28px;
+
+    text-align:center;
+
+    color:var(--text-muted);
+}
+
+.auth-footer a{
+    color:var(--primary);
+    font-weight:600;
+    text-decoration:none;
+}
+
+.theme-toggle{
+    position:fixed;
+    top:25px;
+    right:25px;
+}
+
+.theme-btn{
+    width:52px;
+    height:52px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.92);
+
+    color:#0f172a;
+
+    font-size:1.1rem;
+
+    cursor:pointer;
+
+    box-shadow:var(--shadow);
+
+    transition:.3s ease;
+}
+
+[data-theme="dark"] .theme-btn{
+    background:#111827;
+    color:#f8fafc;
+}
+
+.theme-btn:hover{
+    transform:scale(1.05);
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media(max-width:768px){
+
+    body{
+        padding:20px;
+    }
+
+    .auth-card{
+        padding:35px 25px;
+        border-radius:28px;
+    }
+
+    .auth-title{
+        font-size:1.8rem;
+    }
+
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Iniciar Sesión</title>
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    >
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/auth/auth.css}"
+    >
+
+</head>
+
+<body>
+
+<div class="theme-toggle">
+
+    <button
+            class="theme-btn"
+            onclick="toggleTheme()"
+    >
+        🌙
+    </button>
+
+</div>
+
+<div class="auth-wrapper">
+
+    <form
+            class="auth-card"
+            method="post"
+            action="/perform_login"
+    >
+
+        <div class="logo">
+            🔐
+        </div>
+
+        <h1 class="auth-title">
+            Iniciar Sesión
+        </h1>
+
+        <p class="auth-subtitle">
+            Accede a tu Agenda Virtual y organiza
+            tus tareas, contactos y eventos.
+        </p>
+
+        <div class="input-group">
+
+            <label class="input-label">
+                Usuario
+            </label>
+
+            <input
+                    type="text"
+                    name="username"
+                    placeholder="Ingresa tu usuario"
+                    class="input-style"
+                    required
+            >
+
+        </div>
+
+        <div class="input-group">
+
+            <label class="input-label">
+                Contraseña
+            </label>
+
+            <input
+                    type="password"
+                    name="password"
+                    placeholder="Ingresa tu contraseña"
+                    class="input-style"
+                    required
+            >
+
+        </div>
+
+        <button
+                type="submit"
+                class="submit-btn"
+        >
+            Ingresar
+        </button>
+
+        <div class="auth-footer">
+
+            ¿No tienes cuenta?
+
+            <a href="/register">
+                Regístrate
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/auth/auth.js}"></script>
+
+</body>
+</html>

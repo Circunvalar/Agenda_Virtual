@@ -15,12 +15,12 @@ public class ControladorPrincipal {
     @GetMapping("/login")
     public String login() {
 
-        return "login/login";
+        return "auth/login";
     }
 
     @GetMapping("/register")
     public String register() {
 
-        return "register/register";
+        return "auth/register";
         }
     }

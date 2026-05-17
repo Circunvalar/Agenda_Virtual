@@ -31,6 +31,9 @@ public class Usuario extends EntidadBase {
     @Column(nullable = false, unique = true, length = 120)
     private String correoElectronico;
 
+    @Column(unique = true)
+    private String telefono;
+
     @Column(nullable = false)
     private String contrasena;
 

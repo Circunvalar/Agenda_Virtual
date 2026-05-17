@@ -1,6 +1,5 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.autentificacion;
 
-
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Rol;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
@@ -34,9 +33,15 @@ public class AutenticacionControlador {
             return "redirect:/register?emailExists";
         }
 
+        if (usuarioRepositorio.existsByTelefono(request.getTelefono())) {
+
+            return "redirect:/register?phoneExists";
+        }
+
         Usuario user = Usuario.builder()
                 .nombreDeUsuario(request.getUsername())
                 .correoElectronico(request.getEmail())
+                .telefono(request.getTelefono())
                 .contrasena(
                         passwordEncoder.encode(
                                 request.getPassword()
@@ -59,6 +64,9 @@ public class AutenticacionControlador {
 
         @Email
         private String email;
+
+        @NotBlank
+        private String telefono;
 
         @NotBlank
         private String password;

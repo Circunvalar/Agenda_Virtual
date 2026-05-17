@@ -2,8 +2,8 @@
 <html
         lang="es"
         xmlns:th="http://www.thymeleaf.org"
-        class="h-full"
 >
+
 <head>
 
     <meta charset="UTF-8">
@@ -15,234 +15,132 @@
 
     <title>Eventos</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
+            th:href="@{/css/dashboard/layout.css}"
     >
 
-    <!-- CSS -->
     <link
             rel="stylesheet"
             th:href="@{/css/dashboard/eventos.css}"
     >
 
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    >
+    <script>
+
+        if(localStorage.getItem('theme') === 'dark'){
+
+            document.documentElement.classList.add('dark');
+
+        }
+
+    </script>
 </head>
 
-<body class="
-    bg-slate-100
-    dark:bg-slate-950
-    min-h-screen
-    transition
-">
+<body>
 
-<div class="flex min-h-screen">
+<div class="dashboard-layout">
 
     <!-- SIDEBAR -->
 
-    <aside class="
-        sidebar
-    ">
-
-        <div>
-
-            <h1 class="
-                text-3xl
-                font-bold
-                text-indigo-600
-                mb-10
-            ">
-                Agenda Virtual
-            </h1>
-
-            <nav class="space-y-3">
-
-                <a
-                        href="/dashboard"
-                        class="nav-link"
-                >
-                    Dashboard
-                </a>
-
-                <a
-                        href="/eventos"
-                        class="nav-link-active"
-                >
-                    Eventos
-                </a>
-
-                <a
-                        href="/tareas"
-                        class="nav-link"
-                >
-                    Tareas
-                </a>
-
-                <a
-                        href="/recordatorios"
-                        class="nav-link"
-                >
-                    Recordatorios
-                </a>
-
-            </nav>
-
-        </div>
-
-        <a
-                href="/logout"
-                class="logout-btn"
-        >
-            Cerrar sesión
-        </a>
-
-    </aside>
+    <div
+            th:replace="~{fragments/sidebar :: sidebar('eventos')}"
+    ></div>
 
     <!-- MAIN -->
 
-    <main class="flex-1 p-6 lg:p-10">
+    <main class="main-content">
 
-        <!-- HEADER -->
+        <!-- TOPBAR -->
 
-        <div class="
-            flex
-            flex-col
-            lg:flex-row
-            justify-between
-            lg:items-center
-            gap-6
-            mb-10
-        ">
+        <div
+                th:replace="
+        ~{fragments/topbar ::
+        topbar(
+            'Eventos',
+            'Organiza tus reuniones y actividades'
+        )}
+    "
+        ></div>
 
-            <div>
+        <!-- HEADER ACTION -->
 
-                <h2 class="
-                    text-4xl
-                    font-bold
-                    text-slate-800
-                    dark:text-white
-                ">
-                    Eventos
-                </h2>
+        <div class="events-header">
 
-                <p class="
-                    mt-2
-                    text-slate-500
-                    dark:text-slate-400
-                ">
-                    Organiza tus eventos y reuniones.
-                </p>
-
-            </div>
-
-            <div class="flex gap-4">
-
-                <button
-                        type="button"
-                        onclick="toggleTheme()"
-                        class="theme-btn"
-                >
-                    🌙
-                </button>
-
-                <button
-                        type="button"
-                        onclick="openModal()"
-                        class="primary-btn"
-                >
-                    + Nuevo Evento
-                </button>
-
-            </div>
+            <button
+                    type="button"
+                    onclick="openCreateModal()"
+                    class="primary-btn"
+            >
+                + Nuevo Evento
+            </button>
 
         </div>
 
-        <!-- MENSAJE SI NO HAY EVENTOS -->
+        <!-- VACIO -->
 
         <div
                 th:if="${#lists.isEmpty(eventos)}"
                 class="empty-card"
         >
 
-            <h3 class="
-                text-2xl
-                font-bold
-                text-slate-700
-                dark:text-white
-            ">
+            <h3>
                 No tienes eventos registrados
             </h3>
 
-            <p class="
-                mt-3
-                text-slate-500
-            ">
+            <p>
                 Crea tu primer evento para comenzar.
             </p>
 
         </div>
 
-        <!-- LISTADO -->
+        <!-- LISTA -->
 
-        <div class="
-            grid
-            grid-cols-1
-            xl:grid-cols-2
-            gap-6
-        ">
+        <div class="events-grid">
 
             <div
                     th:each="evento : ${eventos}"
                     class="event-card"
+                    th:attr="
+                        data-id=${evento.id},
+                        data-titulo=${evento.titulo},
+                        data-descripcion=${evento.descripcion},
+                        data-fechainicio=${evento.fechaInicio},
+                        data-fechafin=${evento.fechaFin},
+                        data-horainicio=${evento.horaInicio},
+                        data-horafin=${evento.horaFin},
+                        data-ubicacion=${evento.ubicacion},
+                        data-color=${evento.color},
+                        data-todoeldia=${evento.todoElDia}
+                    "
+                    onclick="openDetailsModal(this)"
             >
 
-                <div class="
-                    flex
-                    justify-between
-                    items-start
-                    gap-4
-                ">
+                <div class="event-top">
 
                     <div>
 
                         <h3
                                 th:text="${evento.titulo}"
-                                class="
-                                    text-2xl
-                                    font-bold
-                                    text-slate-800
-                                    dark:text-white
-                                "
                         ></h3>
 
                         <p
                                 th:text="${evento.descripcion}"
-                                class="
-                                    mt-3
-                                    text-slate-500
-                                "
                         ></p>
 
                     </div>
 
                     <div
-                            class="
-                                w-5
-                                h-5
-                                rounded-full
-                            "
+                            class="event-color"
                             th:style="'background:'+${evento.color}"
                     ></div>
 
                 </div>
 
-                <div class="
-                    mt-6
-                    flex
-                    flex-wrap
-                    gap-3
-                ">
+                <div class="event-tags">
 
                     <span
                             class="tag-date"
@@ -263,28 +161,6 @@
 
                 </div>
 
-                <div class="
-                    mt-6
-                    flex
-                    justify-end
-                ">
-
-                    <form
-                            th:action="@{'/eventos/delete/' + ${evento.id}}"
-                            method="post"
-                    >
-
-                        <button
-                                type="submit"
-                                class="delete-btn"
-                        >
-                            Eliminar
-                        </button>
-
-                    </form>
-
-                </div>
-
             </div>
 
         </div>
@@ -298,55 +174,61 @@
 <div
         id="modal"
         class="modal-overlay hidden"
+        onclick="outsideClick(event)"
 >
 
-    <div class="modal-container">
+    <div class="modal-content">
 
-        <div class="
-            flex
-            justify-between
-            items-center
-            mb-8
-        ">
+        <!-- CERRAR -->
 
-            <h2 class="
-                text-3xl
-                font-bold
-                dark:text-white
-            ">
-                Nuevo Evento
-            </h2>
+        <button
+                type="button"
+                onclick="attemptCloseModal()"
+                class="close-btn"
+        >
+            ×
+        </button>
 
-            <button
-                    type="button"
-                    onclick="closeModal()"
-                    class="
-                        text-2xl
-                        dark:text-white
-                    "
-            >
-                ×
-            </button>
+        <!-- ALERTA -->
 
+        <div
+                id="warningBox"
+                class="warning-box hidden"
+        >
+            No puedes cerrar sin guardar cambios.
         </div>
 
+        <h2
+                id="modalTitle"
+                class="modal-title"
+        >
+            Nuevo Evento
+        </h2>
+
         <form
-                th:action="@{/eventos}"
-                th:object="${evento}"
+                id="eventoForm"
                 method="post"
-                class="space-y-5"
+                class="event-form"
         >
 
             <input
+                    type="hidden"
+                    id="eventoId"
+                    name="id"
+            >
+
+            <input
                     type="text"
-                    th:field="*{titulo}"
+                    id="titulo"
+                    name="titulo"
                     placeholder="Título"
                     class="input-style"
                     required
             >
 
             <textarea
-                    th:field="*{descripcion}"
+                    id="descripcion"
+                    name="descripcion"
                     placeholder="Descripción"
                     rows="4"
                     class="input-style"
@@ -358,20 +240,12 @@
 
                 <input
                         type="checkbox"
-                        th:field="*{todoElDia}"
                         id="todoElDia"
+                        name="todoElDia"
                         onchange="toggleHoras()"
-                        class="
-                            w-5
-                            h-5
-                        "
                 >
 
-                <span class="
-                    text-slate-700
-                    dark:text-white
-                    font-medium
-                ">
+                <span>
                     Todo el día
                 </span>
 
@@ -379,23 +253,20 @@
 
             <!-- FECHAS -->
 
-            <div class="
-                grid
-                grid-cols-1
-                md:grid-cols-2
-                gap-4
-            ">
+            <div class="form-grid">
 
                 <input
                         type="date"
-                        th:field="*{fechaInicio}"
+                        id="fechaInicio"
+                        name="fechaInicio"
                         class="input-style"
                         required
                 >
 
                 <input
                         type="date"
-                        th:field="*{fechaFin}"
+                        id="fechaFin"
+                        name="fechaFin"
                         class="input-style"
                         required
                 >
@@ -406,51 +277,81 @@
 
             <div
                     id="horasContainer"
-                    class="
-                        grid
-                        grid-cols-1
-                        md:grid-cols-2
-                        gap-4
-                    "
+                    class="form-grid"
             >
 
                 <input
                         type="time"
-                        th:field="*{horaInicio}"
-                        class="input-style hora-input"
+                        id="horaInicio"
+                        name="horaInicio"
+                        class="input-style"
                 >
 
                 <input
                         type="time"
-                        th:field="*{horaFin}"
-                        class="input-style hora-input"
+                        id="horaFin"
+                        name="horaFin"
+                        class="input-style"
                 >
 
             </div>
 
+            <!-- UBICACION -->
+
             <input
                     type="text"
-                    th:field="*{ubicacion}"
+                    id="ubicacion"
+                    name="ubicacion"
                     placeholder="Ubicación"
                     class="input-style"
             >
 
+            <!-- COLOR -->
+
             <input
                     type="color"
-                    th:field="*{color}"
-                    class="
-                        w-full
-                        h-14
-                        rounded-2xl
-                        overflow-hidden
-                    "
+                    id="color"
+                    name="color"
+                    class="color-input"
             >
+
+            <!-- BOTONES -->
+
+            <div class="button-group">
+
+                <button
+                        id="saveBtn"
+                        type="submit"
+                        class="save-btn"
+                >
+                    Guardar cambios
+                </button>
+
+                <button
+                        type="button"
+                        onclick="forceCloseModal()"
+                        class="cancel-btn"
+                >
+                    Cancelar
+                </button>
+
+            </div>
+
+        </form>
+
+        <!-- ELIMINAR -->
+
+        <form
+                id="deleteForm"
+                method="post"
+                class="delete-form"
+        >
 
             <button
                     type="submit"
-                    class="submit-btn"
+                    class="delete-btn"
             >
-                Crear Evento
+                Eliminar Evento
             </button>
 
         </form>
@@ -459,8 +360,159 @@
 
 </div>
 
-<!-- JS -->
-<script th:src="@{/js/dashboard/eventos.js}"></script>
+<script>
+
+    const modal = document.getElementById('modal');
+
+    let editMode = false;
+
+    function openCreateModal() {
+
+        editMode = false;
+
+        document.getElementById('modalTitle').innerText = 'Nuevo Evento';
+
+        document.getElementById('eventoForm').action = '/eventos';
+
+        document.getElementById('deleteForm').classList.add('hidden');
+
+        document.getElementById('eventoId').value = '';
+        document.getElementById('titulo').value = '';
+        document.getElementById('descripcion').value = '';
+        document.getElementById('fechaInicio').value = '';
+        document.getElementById('fechaFin').value = '';
+        document.getElementById('horaInicio').value = '';
+        document.getElementById('horaFin').value = '';
+        document.getElementById('ubicacion').value = '';
+        document.getElementById('color').value = '#6366f1';
+        document.getElementById('todoElDia').checked = false;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        toggleHoras();
+    }
+
+    function openDetailsModal(card) {
+
+        editMode = true;
+
+        document.getElementById('modalTitle').innerText = 'Editar Evento';
+
+        const id = card.dataset.id;
+
+        document.getElementById('eventoForm').action =
+            '/eventos/update/' + id;
+
+        document.getElementById('deleteForm').action =
+            '/eventos/delete/' + id;
+
+        document.getElementById('deleteForm').classList.remove('hidden');
+
+        document.getElementById('eventoId').value = id;
+
+        document.getElementById('titulo').value =
+            card.dataset.titulo || '';
+
+        document.getElementById('descripcion').value =
+            card.dataset.descripcion || '';
+
+        document.getElementById('fechaInicio').value =
+            card.dataset.fechainicio || '';
+
+        document.getElementById('fechaFin').value =
+            card.dataset.fechafin || '';
+
+        document.getElementById('horaInicio').value =
+            card.dataset.horainicio || '';
+
+        document.getElementById('horaFin').value =
+            card.dataset.horafin || '';
+
+        document.getElementById('ubicacion').value =
+            card.dataset.ubicacion || '';
+
+        document.getElementById('color').value =
+            card.dataset.color || '#6366f1';
+
+        document.getElementById('todoElDia').checked =
+            card.dataset.todoeldia === 'true';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        toggleHoras();
+    }
+
+    function toggleHoras() {
+
+        const todoElDia =
+            document.getElementById('todoElDia').checked;
+
+        const horasContainer =
+            document.getElementById('horasContainer');
+
+        if(todoElDia){
+
+            horasContainer.classList.add('hidden');
+
+        }else{
+
+            horasContainer.classList.remove('hidden');
+
+        }
+    }
+
+    function attemptCloseModal() {
+
+        if(editMode){
+
+            const warning =
+                document.getElementById('warningBox');
+
+            warning.classList.remove('hidden');
+
+            return;
+        }
+
+        forceCloseModal();
+    }
+
+    function forceCloseModal() {
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+        document
+            .getElementById('warningBox')
+            .classList.add('hidden');
+    }
+
+    function outsideClick(event) {
+
+        if(event.target === modal){
+
+            attemptCloseModal();
+
+        }
+    }
+
+    function toggleTheme() {
+
+        document.documentElement.classList.toggle('dark');
+
+        if(document.documentElement.classList.contains('dark')){
+
+            localStorage.setItem('theme', 'dark');
+
+        }else{
+
+            localStorage.setItem('theme', 'light');
+
+        }
+    }
+
+</script>
 
 </body>
 </html>

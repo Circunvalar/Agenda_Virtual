@@ -1,212 +1,249 @@
-<!-- ========================= -->
-<!-- index.html -->
-<!-- ========================= -->
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html
+        lang="es"
+        data-theme="light"
+        xmlns:th="http://www.thymeleaf.org"
+>
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Agenda Virtual</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- GOOGLE FONTS -->
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    >
 
-    <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family:'Inter',sans-serif;
-        }
+    <!-- CSS -->
+    <link
+            rel="stylesheet"
+            th:href="@{/css/index/index.css}"
+    >
 
-        :root{
-            --bg:#f5f7fb;
-            --card:#ffffff;
-            --text:#1e293b;
-            --primary:#4f46e5;
-            --secondary:#6366f1;
-            --border:#e2e8f0;
-            --shadow:0 10px 30px rgba(0,0,0,.08);
-        }
-
-        [data-theme="dark"]{
-            --bg:#0f172a;
-            --card:#1e293b;
-            --text:#f8fafc;
-            --primary:#818cf8;
-            --secondary:#6366f1;
-            --border:#334155;
-            --shadow:0 10px 30px rgba(0,0,0,.4);
-        }
-
-        body{
-            background:var(--bg);
-            color:var(--text);
-            transition:.3s;
-        }
-
-        header{
-            padding:20px 8%;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            position:sticky;
-            top:0;
-            background:rgba(255,255,255,.6);
-            backdrop-filter:blur(10px);
-        }
-
-        .logo{
-            font-size:1.5rem;
-            font-weight:700;
-            color:var(--primary);
-        }
-
-        nav{
-            display:flex;
-            gap:15px;
-            align-items:center;
-        }
-
-        .btn{
-            padding:12px 22px;
-            border:none;
-            border-radius:12px;
-            cursor:pointer;
-            font-weight:600;
-            transition:.3s;
-            text-decoration:none;
-        }
-
-        .btn-primary{
-            background:var(--primary);
-            color:white;
-        }
-
-        .btn-primary:hover{
-            transform:translateY(-2px);
-        }
-
-        .theme-btn{
-            width:45px;
-            height:45px;
-            border-radius:50%;
-            border:none;
-            cursor:pointer;
-            background:var(--card);
-            box-shadow:var(--shadow);
-            color:var(--text);
-            font-size:18px;
-        }
-
-        .hero{
-            min-height:90vh;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            text-align:center;
-            padding:40px 8%;
-        }
-
-        .hero-content{
-            max-width:750px;
-            animation:fadeIn 1s ease;
-        }
-
-        .hero h1{
-            font-size:4rem;
-            margin-bottom:20px;
-        }
-
-        .hero p{
-            font-size:1.2rem;
-            line-height:1.7;
-            margin-bottom:30px;
-            opacity:.8;
-        }
-
-        .hero-buttons{
-            display:flex;
-            justify-content:center;
-            gap:15px;
-            flex-wrap:wrap;
-        }
-
-        .glass{
-            background:var(--card);
-            border:1px solid var(--border);
-            box-shadow:var(--shadow);
-            border-radius:24px;
-            padding:50px;
-        }
-
-        @keyframes fadeIn{
-            from{
-                opacity:0;
-                transform:translateY(30px);
-            }
-            to{
-                opacity:1;
-                transform:translateY(0);
-            }
-        }
-
-        @media(max-width:768px){
-            .hero h1{
-                font-size:2.5rem;
-            }
-
-            header{
-                padding:20px;
-            }
-        }
-    </style>
 </head>
+
 <body>
 
-<header>
-    <div class="logo">Agenda Virtual</div>
+<!-- HEADER -->
 
-    <nav>
-        <a href="/login" class="btn btn-primary">Iniciar Sesión</a>
-        <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+<header class="header">
+
+    <div class="logo-container">
+
+        <div class="logo-circle">
+            AV
+        </div>
+
+        <div>
+
+            <h1 class="logo-text">
+                Agenda Virtual
+            </h1>
+
+            <p class="logo-subtitle">
+                Organización inteligente
+            </p>
+
+        </div>
+
+    </div>
+
+    <nav class="header-actions">
+
+        <button
+                class="theme-btn"
+                onclick="toggleTheme()"
+        >
+            🌙
+        </button>
+
+        <a
+                href="/login"
+                class="btn btn-outline"
+        >
+            Iniciar Sesión
+        </a>
+
     </nav>
+
 </header>
 
+<!-- HERO -->
+
 <section class="hero">
-    <div class="hero-content glass">
-        <h1>Organiza tu vida de manera inteligente</h1>
 
-        <p>
-            Administra contactos, tareas y eventos desde una plataforma moderna,
-            rápida y totalmente responsive.
-        </p>
+    <div class="hero-container">
 
-        <div class="hero-buttons">
-            <a href="/register" class="btn btn-primary">Crear Cuenta</a>
-            <a href="/login" class="btn btn-primary">Ingresar</a>
+        <!-- LEFT -->
+
+        <div class="hero-content">
+
+            <span class="badge">
+                Plataforma moderna de productividad
+            </span>
+
+            <h2 class="hero-title">
+                Organiza tu tiempo,
+                eventos y tareas
+                desde un solo lugar.
+            </h2>
+
+            <p class="hero-description">
+
+                Agenda Virtual te permite gestionar eventos,
+                recordatorios, tareas y contactos con una
+                experiencia rápida, minimalista y moderna.
+
+            </p>
+
+            <div class="hero-buttons">
+
+                <a
+                        href="/register"
+                        class="btn btn-primary"
+                >
+                    Crear Cuenta
+                </a>
+
+                <a
+                        href="/login"
+                        class="btn btn-secondary"
+                >
+                    Ingresar
+                </a>
+
+            </div>
+
+            <!-- FEATURES -->
+
+            <div class="features-grid">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        📅
+                    </div>
+
+                    <h3>
+                        Eventos
+                    </h3>
+
+                    <p>
+                        Organiza reuniones y actividades.
+                    </p>
+
+                </div>
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        ✅
+                    </div>
+
+                    <h3>
+                        Tareas
+                    </h3>
+
+                    <p>
+                        Gestiona pendientes fácilmente.
+                    </p>
+
+                </div>
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        🔔
+                    </div>
+
+                    <h3>
+                        Recordatorios
+                    </h3>
+
+                    <p>
+                        Nunca olvides algo importante.
+                    </p>
+
+                </div>
+
+            </div>
+
         </div>
+
+        <!-- RIGHT -->
+
+        <div class="preview-card">
+
+            <div class="preview-header">
+
+                <div class="preview-dots">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+                <p>
+                    Dashboard Preview
+                </p>
+
+            </div>
+
+            <div class="preview-body">
+
+                <div class="preview-item">
+                    <span>📅 Evento de trabajo</span>
+                    <small>10:00 AM</small>
+                </div>
+
+                <div class="preview-item">
+                    <span>✅ Finalizar proyecto</span>
+                    <small>Hoy</small>
+                </div>
+
+                <div class="preview-item">
+                    <span>🔔 Reunión importante</span>
+                    <small>Mañana</small>
+                </div>
+
+                <div class="preview-stats">
+
+                    <div>
+                        <h4>12</h4>
+                        <p>Eventos</p>
+                    </div>
+
+                    <div>
+                        <h4>8</h4>
+                        <p>Tareas</p>
+                    </div>
+
+                    <div>
+                        <h4>5</h4>
+                        <p>Alertas</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+
 </section>
 
-<script>
-    function toggleTheme(){
-        const html=document.documentElement;
-        const current=html.getAttribute("data-theme");
-
-        if(current==="dark"){
-            html.setAttribute("data-theme","light");
-            localStorage.setItem("theme","light");
-        }else{
-            html.setAttribute("data-theme","dark");
-            localStorage.setItem("theme","dark");
-        }
-    }
-
-    const savedTheme=localStorage.getItem("theme");
-    if(savedTheme){
-        document.documentElement.setAttribute("data-theme",savedTheme);
-    }
-</script>
+<!-- JS -->
+<script th:src="@{/js/index/index.js}"></script>
 
 </body>
 </html>

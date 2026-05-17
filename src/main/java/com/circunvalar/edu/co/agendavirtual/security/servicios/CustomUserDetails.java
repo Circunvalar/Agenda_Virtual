@@ -22,9 +22,12 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public String getEmail() {
+
         return user.getCorreoElectronico();
     }
-
+    public String getTelefono()
+    {return user.getTelefono();
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(

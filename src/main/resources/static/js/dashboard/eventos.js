@@ -62,3 +62,65 @@ document.addEventListener(
         toggleHoras();
     }
 );
+function openViewModal(card){
+
+    document
+        .getElementById("viewModal")
+        .classList
+        .remove("hidden");
+
+    document
+        .getElementById("viewTitulo")
+        .innerText =
+        card.dataset.titulo;
+
+    document
+        .getElementById("viewDescripcion")
+        .innerText =
+        card.dataset.descripcion || "Sin descripción";
+
+    document
+        .getElementById("viewFechaInicio")
+        .innerText =
+        card.dataset.fechainicio;
+
+    document
+        .getElementById("viewFechaFin")
+        .innerText =
+        card.dataset.fechafin;
+
+    document
+        .getElementById("viewHoraInicio")
+        .innerText =
+        card.dataset.horainicio || "No aplica";
+
+    document
+        .getElementById("viewHoraFin")
+        .innerText =
+        card.dataset.horafin || "No aplica";
+
+    document
+        .getElementById("viewUbicacion")
+        .innerText =
+        card.dataset.ubicacion || "Sin ubicación";
+
+    document
+        .getElementById("viewEstado")
+        .innerText =
+        card.dataset.estado;
+
+    document
+        .getElementById("viewTodoDia")
+        .innerText =
+        card.dataset.todoeldia === "true"
+            ? "Sí"
+            : "No";
+}
+
+function closeViewModal(){
+
+    document
+        .getElementById("viewModal")
+        .classList
+        .add("hidden");
+}

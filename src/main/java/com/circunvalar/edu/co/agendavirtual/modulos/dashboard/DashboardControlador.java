@@ -53,6 +53,6 @@ public class DashboardControlador {
                 )
         );
 
-        return "dashboard/index";
+        return "dashboard/dashboard";
     }
 }

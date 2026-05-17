@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        lang="es"
+>
+
+<body>
+
+<div
+        th:fragment="topbar(title,subtitle)"
+        class="topbar"
+>
+
+    <div>
+
+        <h2
+                class="page-title"
+                th:text="${title}"
+        >
+            Dashboard
+        </h2>
+
+        <p
+                class="page-subtitle"
+                th:text="${subtitle}"
+        >
+            Bienvenido
+        </p>
+
+    </div>
+
+    <div class="topbar-actions">
+
+        <button
+                type="button"
+                onclick="toggleTheme()"
+                class="theme-toggle"
+        >
+            🌙
+        </button>
+
+    </div>
+
+</div>
+
+</body>
+</html>

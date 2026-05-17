@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html
+        lang="es"
+        xmlns:th="http://www.thymeleaf.org"
+>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dashboard</title>
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/layout.css}"
+    >
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    >
+    <script>
+
+        if(localStorage.getItem('theme') === 'dark'){
+
+            document.documentElement.classList.add('dark');
+
+        }
+
+    </script>
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+
+    <div
+            th:replace="~{fragments/sidebar :: sidebar('eventos')}"
+    ></div>
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+
+        <div
+                th:replace="~{fragments/topbar :: topbar(
+                'Dashboard',
+                'Gestiona eventos, tareas y recordatorios'
+            )}"
+        ></div>
+
+        <!-- GRID -->
+
+        <div
+                style="
+                display:grid;
+                grid-template-columns:
+                repeat(auto-fit,minmax(280px,1fr));
+                gap:25px;
+                margin-top:30px;
+            "
+        >
+
+            <div class="dashboard-card">
+
+                <h3 style="font-size:1.5rem;">
+                    📅 Eventos
+                </h3>
+
+                <p
+                        style="
+                        margin-top:15px;
+                        color:var(--text-light);
+                        line-height:1.7;
+                    "
+                >
+                    Gestiona reuniones, eventos y citas.
+                </p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <h3 style="font-size:1.5rem;">
+                    ✅ Tareas
+                </h3>
+
+                <p
+                        style="
+                        margin-top:15px;
+                        color:var(--text-light);
+                        line-height:1.7;
+                    "
+                >
+                    Organiza actividades y prioridades.
+                </p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <h3 style="font-size:1.5rem;">
+                    🔔 Recordatorios
+                </h3>
+
+                <p
+                        style="
+                        margin-top:15px;
+                        color:var(--text-light);
+                        line-height:1.7;
+                    "
+                >
+                    Programa alertas importantes.
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script
+        th:src="@{/js/dashboard/layout.js}"
+></script>
+
+</body>
+</html>
