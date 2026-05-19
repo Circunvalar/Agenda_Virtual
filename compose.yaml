@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: AgendaVirtual
       POSTGRES_USER: ADMINISTRADOR
-      POSTGRES_PASSWORD: 12345
+      POSTGRES_PASSWORD: 123456
     ports:
       - "5432:5432"
 
@@ -21,4 +21,4 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/AgendaVirtual
       SPRING_DATASOURCE_USERNAME: ADMINISTRADOR
-      SPRING_DATASOURCE_PASSWORD: 12345
+      SPRING_DATASOURCE_PASSWORD: 123456
