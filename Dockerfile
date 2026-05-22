@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile: build the jar with Maven, then create a slim runtime image
 
-FROM maven:3.9.4-eclipse-temurin-21-jdk AS build
+FROM maven:3.9.4-jdk-21 AS build
 WORKDIR /workspace
 
 # Copy only what is necessary for Maven to build (use mvnw if present)
