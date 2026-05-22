@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile: build the jar with Maven, then create a slim runtime image
 
-FROM maven:3.9.4-jdk-21 AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /workspace
 
 # Copy only what is necessary for Maven to build (use mvnw if present)
@@ -17,9 +17,13 @@ WORKDIR /app
 # Copy the built jar from the build stage
 COPY --from=build /workspace/target/*.jar app.jar
 
+# Copy entrypoint script and make it executable
+COPY entrypoint.sh ./
+RUN chmod +x ./entrypoint.sh
+
 # Default port (can be overridden via environment variable at runtime)
 ENV APP_PORT=4444
 EXPOSE ${APP_PORT}
 
-# Start the Spring Boot app, allowing override of server.port via APP_PORT
-ENTRYPOINT ["sh","-c","java -jar app.jar --server.port=${APP_PORT}"]
+# Use the PORT provided by platforms like Render if present, otherwise fall back to APP_PORT
+ENTRYPOINT ["./entrypoint.sh"]
