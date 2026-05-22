@@ -3,13 +3,17 @@
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /workspace
 
-# Copy only what is necessary for Maven to build (use mvnw if present)
-COPY mvnw pom.xml .mvn/ ./
+# Install Maven in the build stage (keeps the runtime image slim)
+RUN apt-get update \
+	&& apt-get install -y maven \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Copy only what is necessary for Maven to build
 COPY pom.xml ./
 COPY src ./src
 
-# If mvnw is present make it executable and use it (ensures reproducible build)
-RUN if [ -f ./mvnw ]; then chmod +x ./mvnw && ./mvnw -B -DskipTests package; else mvn -B -DskipTests package; fi
+# Build the jar
+RUN mvn -B -DskipTests package
 
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
