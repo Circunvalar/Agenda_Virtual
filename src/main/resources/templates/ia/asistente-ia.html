@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html
+        lang="es"
+        xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Asistente IA</title>
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/dashboard.css}"
+    >
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/ia/asistente-ia.css}"
+    >
+
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+            rel="stylesheet"
+    >
+
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-top">
+
+            <div class="logo">
+
+                <h1>
+                    Agenda Virtual
+                </h1>
+
+                <p>
+                    Inteligencia Artificial
+                </p>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <a
+                        th:href="@{/dashboard}"
+                        class="sidebar-link"
+                >
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
+                </a>
+
+                <a
+                        th:href="@{/recordatorios}"
+                        class="sidebar-link"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    Recordatorios
+                </a>
+
+                <a
+                        th:href="@{/eventos}"
+                        class="sidebar-link"
+                >
+                    <i class="fa-solid fa-calendar"></i>
+                    Eventos
+                </a>
+
+                <a
+                        th:href="@{/ia}"
+                        class="sidebar-link active"
+                >
+                    <i class="fa-solid fa-robot"></i>
+                    Asistente IA
+                </a>
+
+            </nav>
+
+        </div>
+
+        <div class="sidebar-bottom">
+
+            <a
+                    th:href="@{/logout}"
+                    class="logout-btn"
+            >
+                Cerrar sesión
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+
+        <div class="topbar">
+
+            <div class="topbar-left">
+
+                <h2>
+                    Asistente Inteligente
+                </h2>
+
+                <p>
+                    Organiza automáticamente tus tareas usando IA
+                </p>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <button
+                        class="theme-btn"
+                        onclick="toggleTheme()"
+                >
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- CARD IA -->
+
+        <div class="ia-card">
+
+            <div class="ia-header">
+
+                <div class="ia-icon">
+                    🤖
+                </div>
+
+                <div>
+
+                    <h3>
+                        Describe tus actividades
+                    </h3>
+
+                    <p>
+                        La IA analizará y creará recordatorios automáticamente
+                    </p>
+
+                </div>
+
+            </div>
+
+            <textarea
+                    id="mensajeIA"
+                    class="ia-textarea"
+                    placeholder="Ejemplo:
+
+Tengo examen mañana,
+debo estudiar cálculo,
+comprar medicamentos,
+hacer ejercicio
+y organizar mi cuarto."
+            ></textarea>
+
+            <button
+                    id="btnIA"
+                    class="ia-button"
+            >
+
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                Analizar y crear tareas
+
+            </button>
+
+        </div>
+
+        <!-- RESPUESTA -->
+
+        <div
+                id="respuestaIA"
+                class="ia-response-container"
+        ></div>
+
+    </main>
+
+</div>
+
+<script>
+
+    const html =
+        document.documentElement;
+
+    function initializeTheme(){
+
+        const savedTheme =
+            localStorage.getItem("theme");
+
+        if(savedTheme === "light"){
+
+            html.classList.add("light");
+
+        }
+
+    }
+
+    function toggleTheme(){
+
+        document.documentElement
+            .classList.toggle("light");
+
+        if(
+            document.documentElement
+                .classList.contains("light")
+        ){
+
+            localStorage.setItem(
+                "theme",
+                "light"
+            );
+
+        }else{
+
+            localStorage.setItem(
+                "theme",
+                "dark"
+            );
+
+        }
+
+    }
+
+    initializeTheme();
+
+</script>
+
+<script
+        th:src="@{/js/ia/asistente-ia.js}"
+></script>
+
+</body>
+</html>

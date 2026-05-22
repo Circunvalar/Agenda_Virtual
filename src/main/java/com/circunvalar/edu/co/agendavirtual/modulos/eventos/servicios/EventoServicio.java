@@ -66,7 +66,6 @@ public class EventoServicio {
                                 ? dto.getEstado()
                                 : EstadoEvento.PENDIENTE
                 )
-                .invitados(invitados)
                 .creador(creador)
                 .invitados(invitados)
                 .build();
@@ -98,9 +97,11 @@ public class EventoServicio {
                 .findById(UUID.fromString(id))
                 .orElseThrow();
 
-        if (!evento.getCreador()
-                .getId()
-                .equals(usuario.getId())) {
+        if (
+                !evento.getCreador()
+                        .getId()
+                        .equals(usuario.getId())
+        ) {
 
             throw new RuntimeException(
                     "No autorizado"
@@ -140,6 +141,7 @@ public class EventoServicio {
                 .estado(evento.getEstado())
                 .build();
     }
+
     public void actualizarEvento(
             UUID id,
             Evento eventoActualizado,
@@ -187,7 +189,46 @@ public class EventoServicio {
                 eventoActualizado.getColor()
         );
 
+        if (invitadosIds != null) {
+
+            List<Usuario> invitados =
+                    usuarioRepositorio.findAllById(invitadosIds);
+
+            evento.setInvitados(invitados);
+
+        } else {
+
+            evento.setInvitados(Collections.emptyList());
+
+        }
+
         eventoRepositorio.save(evento);
     }
+    public List<EventoResponseDTO> obtenerEventosDTOUsuario(
+            String username
+    ) {
 
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Evento> eventos =
+                eventoRepositorio.findByCreador(usuario);
+
+        return eventos.stream()
+                .map(evento -> EventoResponseDTO.builder()
+                        .id(evento.getId())
+                        .titulo(evento.getTitulo())
+                        .descripcion(evento.getDescripcion())
+                        .fechaInicio(evento.getFechaInicio())
+                        .fechaFin(evento.getFechaFin())
+                        .todoElDia(evento.getTodoElDia())
+                        .horaInicio(evento.getHoraInicio())
+                        .horaFin(evento.getHoraFin())
+                        .ubicacion(evento.getUbicacion())
+                        .color(evento.getColor())
+                        .estado(evento.getEstado())
+                        .build())
+                .toList();
+    }
 }

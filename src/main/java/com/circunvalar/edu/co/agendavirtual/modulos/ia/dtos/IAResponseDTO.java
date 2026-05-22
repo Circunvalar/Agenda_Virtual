@@ -1,24 +1,22 @@
-package com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos;
+package com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.CategoriaRecordatorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.PrioridadRecordatorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.TipoRepeticion;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter
-public class RecordatorioRequestDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class IAResponseDTO {
 
     private String titulo;
 
     private String mensaje;
 
-    private LocalDateTime fechaLimite;
+    private String fechaLimite;
 
     private Integer recordarAntesMinutos;
 
@@ -33,7 +31,5 @@ public class RecordatorioRequestDTO {
     private CategoriaRecordatorio categoria;
 
     private String color;
-
-    private List<UUID> invitadosIds;
 
 }

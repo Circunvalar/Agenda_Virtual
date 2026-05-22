@@ -4,13 +4,22 @@ import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.Reco
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public interface RecordatorioRepositorio
-        extends JpaRepository<Recordatorio, UUID> {
+public interface RecordatorioRepositorio extends JpaRepository<Recordatorio, UUID> {
 
-    List<Recordatorio> findByCreador(Usuario creador);
-    List<Recordatorio> findByCreador(UUID creador);
+    List<Recordatorio> findByCreadorAndArchivadoFalseOrderByFechaLimiteAsc(
+            Usuario creador
+    );
+
+    List<Recordatorio> findByArchivadoFalseAndCompletadoFalse();
+
+    List<Recordatorio> findByNotificadoFalseAndArchivadoFalseAndCompletadoFalse();
+
+    List<Recordatorio> findByFechaLimiteBeforeAndArchivadoFalse(
+            LocalDateTime fecha
+    );
 
 }

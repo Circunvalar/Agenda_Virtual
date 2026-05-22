@@ -1,126 +1,185 @@
-tailwind.config = {
-    darkMode:'class'
-};
+let createChanged = false;
+let editChanged = false;
 
-const html = document.documentElement;
+const createForm =
+    document.getElementById('createForm');
 
-if(localStorage.theme === 'dark'){
-    html.classList.add('dark');
+const editForm =
+    document.getElementById('editForm');
+
+createForm.addEventListener(
+    'input',
+    () => createChanged = true
+);
+
+editForm.addEventListener(
+    'input',
+    () => editChanged = true
+);
+
+function openCreateModal(){
+
+    document.getElementById(
+        'createModal'
+    ).style.display = 'flex';
+
 }
 
-function toggleTheme(){
+function openEditModal(button){
 
-    html.classList.toggle('dark');
+    const modal =
+        document.getElementById('editModal');
 
-    localStorage.theme =
-        html.classList.contains('dark')
-            ? 'dark'
-            : 'light';
+    const id =
+        button.dataset.id;
+
+    editForm.action =
+        `/eventos/update/${id}`;
+
+    document.getElementById(
+        'editTitulo'
+    ).value = button.dataset.titulo;
+
+    document.getElementById(
+        'editDescripcion'
+    ).value = button.dataset.descripcion;
+
+    document.getElementById(
+        'editFechaInicio'
+    ).value = button.dataset.fechainicio;
+
+    document.getElementById(
+        'editFechaFin'
+    ).value = button.dataset.fechafin;
+
+    document.getElementById(
+        'editHoraInicio'
+    ).value = button.dataset.horainicio || '';
+
+    document.getElementById(
+        'editHoraFin'
+    ).value = button.dataset.horafin || '';
+
+    document.getElementById(
+        'editUbicacion'
+    ).value = button.dataset.ubicacion || '';
+
+    document.getElementById(
+        'editColor'
+    ).value = button.dataset.color;
+
+    document.getElementById(
+        'editEstado'
+    ).value = button.dataset.estado;
+
+    const checkbox =
+        document.getElementById('editTodoElDia');
+
+    checkbox.checked =
+        button.dataset.todoeldia === 'true';
+
+    toggleHoras(checkbox);
+
+    modal.style.display = 'flex';
+
 }
 
-const modal =
-    document.getElementById('modal');
+function attemptCloseModal(modalId){
 
-function openModal(){
+    if(
+        modalId === 'createModal'
+        && createChanged
+    ){
 
-    modal.classList.remove('hidden');
+        const confirmClose =
+            confirm(
+                'Tienes cambios sin guardar. ¿Deseas salir?'
+            );
+
+        if(!confirmClose){
+            return;
+        }
+
+    }
+
+    if(
+        modalId === 'editModal'
+        && editChanged
+    ){
+
+        const confirmClose =
+            confirm(
+                'Tienes cambios sin guardar. ¿Deseas salir?'
+            );
+
+        if(!confirmClose){
+            return;
+        }
+
+    }
+
+    document.getElementById(
+        modalId
+    ).style.display = 'none';
+
 }
 
-function closeModal(){
+window.onclick = function(event){
 
-    modal.classList.add('hidden');
+    const createModal =
+        document.getElementById('createModal');
+
+    const editModal =
+        document.getElementById('editModal');
+
+    if(event.target === createModal){
+
+        attemptCloseModal('createModal');
+
+    }
+
+    if(event.target === editModal){
+
+        attemptCloseModal('editModal');
+
+    }
+
 }
 
-function toggleHoras(){
+function toggleHoras(checkbox){
 
-    const todoElDia =
-        document.getElementById('todoElDia');
+    const modal =
+        checkbox.closest('.modal');
 
-    const horasContainer =
-        document.getElementById('horasContainer');
+    const horas =
+        modal.querySelectorAll('.horas-container');
 
-    const horaInputs =
-        document.querySelectorAll('.hora-input');
+    horas.forEach(hora => {
 
-    if(todoElDia.checked){
+        if(checkbox.checked){
 
-        horasContainer.classList.add('hidden');
+            hora.classList.add('hidden');
 
-        horaInputs.forEach(input => {
-            input.value = '';
+        }else{
+
+            hora.classList.remove('hidden');
+
+        }
+
+    });
+
+}
+
+document
+    .querySelectorAll('input[name="todoElDia"]')
+    .forEach(checkbox => {
+
+        toggleHoras(checkbox);
+
+        checkbox.addEventListener('change', function(){
+
+            toggleHoras(this);
+
         });
 
-    }else{
-
-        horasContainer.classList.remove('hidden');
-    }
-}
-
-document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-        toggleHoras();
-    }
-);
-function openViewModal(card){
-
-    document
-        .getElementById("viewModal")
-        .classList
-        .remove("hidden");
-
-    document
-        .getElementById("viewTitulo")
-        .innerText =
-        card.dataset.titulo;
-
-    document
-        .getElementById("viewDescripcion")
-        .innerText =
-        card.dataset.descripcion || "Sin descripción";
-
-    document
-        .getElementById("viewFechaInicio")
-        .innerText =
-        card.dataset.fechainicio;
-
-    document
-        .getElementById("viewFechaFin")
-        .innerText =
-        card.dataset.fechafin;
-
-    document
-        .getElementById("viewHoraInicio")
-        .innerText =
-        card.dataset.horainicio || "No aplica";
-
-    document
-        .getElementById("viewHoraFin")
-        .innerText =
-        card.dataset.horafin || "No aplica";
-
-    document
-        .getElementById("viewUbicacion")
-        .innerText =
-        card.dataset.ubicacion || "Sin ubicación";
-
-    document
-        .getElementById("viewEstado")
-        .innerText =
-        card.dataset.estado;
-
-    document
-        .getElementById("viewTodoDia")
-        .innerText =
-        card.dataset.todoeldia === "true"
-            ? "Sí"
-            : "No";
-}
-
-function closeViewModal(){
-
-    document
-        .getElementById("viewModal")
-        .classList
-        .add("hidden");
-}
+    });

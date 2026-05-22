@@ -2,24 +2,34 @@ package com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.servicios;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioRequestDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.CategoriaRecordatorio;
+import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.PrioridadRecordatorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.Recordatorio;
+import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.TipoRepeticion;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.repositorios.RecordatorioRepositorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecordatorioServicio {
 
     private final RecordatorioRepositorio recordatorioRepositorio;
 
     private final UsuarioRepositorio usuarioRepositorio;
 
+    /*
+        CREAR
+     */
     public Recordatorio crearRecordatorio(
             RecordatorioRequestDTO dto,
             String username
@@ -29,82 +39,463 @@ public class RecordatorioServicio {
                 .findByNombreDeUsuario(username)
                 .orElseThrow();
 
-        List<Usuario> invitados = usuarioRepositorio
-                .findAllById(dto.getInvitadosIds());
+        List<Usuario> invitados = Collections.emptyList();
+
+        if (
+                dto.getInvitadosIds() != null
+                        && !dto.getInvitadosIds().isEmpty()
+        ) {
+
+            invitados = usuarioRepositorio
+                    .findAllById(dto.getInvitadosIds());
+
+        }
 
         Recordatorio recordatorio = Recordatorio.builder()
+
                 .titulo(dto.getTitulo())
+
                 .mensaje(dto.getMensaje())
-                .fechaRecordatorio(dto.getFechaRecordatorio())
-                .repetitivo(dto.getRepetitivo())
-                .intervaloHoras(dto.getIntervaloHoras())
+
+                .fechaLimite(dto.getFechaLimite())
+
+                .recordarAntesMinutos(
+                        dto.getRecordarAntesMinutos() != null
+                                ? dto.getRecordarAntesMinutos()
+                                : 30
+                )
+
+                .repetitivo(
+                        dto.getRepetitivo() != null
+                                ? dto.getRepetitivo()
+                                : false
+                )
+
+                .tipoRepeticion(
+                        dto.getTipoRepeticion() != null
+                                ? dto.getTipoRepeticion()
+                                : TipoRepeticion.SIN_REPETICION
+                )
+
+                .intervaloDias(
+                        dto.getIntervaloDias()
+                )
+
+                .prioridad(
+                        dto.getPrioridad() != null
+                                ? dto.getPrioridad()
+                                : PrioridadRecordatorio.MEDIA
+                )
+
+                .categoria(
+                        dto.getCategoria() != null
+                                ? dto.getCategoria()
+                                : CategoriaRecordatorio.OTRO
+                )
+
+                .color(
+                        dto.getColor() != null
+                                ? dto.getColor()
+                                : "#6366f1"
+                )
+
+                .completado(false)
+
+                .archivado(false)
+
+                .notificado(false)
+
+                .ultimaNotificacion(null)
+
                 .creador(creador)
+
                 .invitados(invitados)
+
                 .build();
 
         return recordatorioRepositorio.save(recordatorio);
+
     }
 
-    public List<Recordatorio> obtenerRecordatoriosUsuario(
+    /*
+        LISTAR
+     */
+    public List<RecordatorioResponseDTO> obtenerRecordatoriosUsuario(
             String username
     ) {
 
         Usuario usuario = usuarioRepositorio
                 .findByNombreDeUsuario(username)
                 .orElseThrow();
-
-        return recordatorioRepositorio.findByCreador(usuario);
-    }
-
-    public void eliminarRecordatorio(
-            String id,
-            String username
-    ) {
-
-        Usuario usuario = usuarioRepositorio
-                .findByNombreDeUsuario(username)
-                .orElseThrow();
-
-        Recordatorio recordatorio = recordatorioRepositorio
-                .findById(java.util.UUID.fromString(id))
-                .orElseThrow();
-
-        if (!recordatorio.getCreador()
-                .getId()
-                .equals(usuario.getId())) {
-
-            throw new RuntimeException(
-                    "No autorizado"
-            );
-        }
-
-        recordatorioRepositorio.delete(recordatorio);
-    }
-    public List<RecordatorioResponseDTO>
-    obtenerRecordatoriosDelUsuario(UUID usuarioId) {
 
         List<Recordatorio> recordatorios =
-                recordatorioRepositorio.findByCreador(usuarioId);
+                recordatorioRepositorio
+                        .findByCreadorAndArchivadoFalseOrderByFechaLimiteAsc(
+                                usuario
+                        );
 
         return recordatorios.stream()
-                .map(this::convertirAResponseDTO)
+                .map(this::convertirDTO)
                 .toList();
+
     }
-    private RecordatorioResponseDTO convertirAResponseDTO(
+
+    /*
+        ACTUALIZAR
+     */
+    public void actualizarRecordatorio(
+            UUID id,
+            RecordatorioRequestDTO dto,
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        Recordatorio recordatorio =
+                recordatorioRepositorio
+                        .findById(id)
+                        .orElseThrow();
+
+        validarPropietario(recordatorio, usuario);
+
+        recordatorio.setTitulo(dto.getTitulo());
+
+        recordatorio.setMensaje(dto.getMensaje());
+
+        recordatorio.setFechaLimite(dto.getFechaLimite());
+
+        recordatorio.setRecordarAntesMinutos(
+                dto.getRecordarAntesMinutos()
+        );
+
+        recordatorio.setRepetitivo(
+                dto.getRepetitivo()
+        );
+
+        recordatorio.setTipoRepeticion(
+                dto.getTipoRepeticion()
+        );
+
+        recordatorio.setIntervaloDias(
+                dto.getIntervaloDias()
+        );
+
+        recordatorio.setPrioridad(
+                dto.getPrioridad()
+        );
+
+        recordatorio.setCategoria(
+                dto.getCategoria()
+        );
+
+        recordatorio.setColor(
+                dto.getColor()
+        );
+
+        if (dto.getInvitadosIds() != null) {
+
+            List<Usuario> invitados =
+                    usuarioRepositorio
+                            .findAllById(dto.getInvitadosIds());
+
+            recordatorio.setInvitados(invitados);
+
+        }
+
+        recordatorioRepositorio.save(recordatorio);
+
+    }
+
+    /*
+        COMPLETAR
+     */
+    public void marcarCompletado(
+            UUID id,
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        Recordatorio recordatorio =
+                recordatorioRepositorio
+                        .findById(id)
+                        .orElseThrow();
+
+        validarPropietario(recordatorio, usuario);
+
+        recordatorio.setCompletado(true);
+
+        if (
+                Boolean.TRUE.equals(
+                        recordatorio.getRepetitivo()
+                )
+        ) {
+
+            actualizarSiguienteFecha(recordatorio);
+
+            recordatorio.setCompletado(false);
+
+        } else {
+
+            recordatorio.setArchivado(true);
+
+        }
+
+        recordatorioRepositorio.save(recordatorio);
+
+    }
+
+    /*
+        ARCHIVAR
+     */
+    public void archivarRecordatorio(
+            UUID id,
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        Recordatorio recordatorio =
+                recordatorioRepositorio
+                        .findById(id)
+                        .orElseThrow();
+
+        validarPropietario(recordatorio, usuario);
+
+        recordatorio.setArchivado(true);
+
+        recordatorioRepositorio.save(recordatorio);
+
+    }
+
+    /*
+        OBTENER PENDIENTES
+     */
+    public List<Recordatorio> obtenerPendientes() {
+
+        return recordatorioRepositorio
+                .findByNotificadoFalseAndArchivadoFalseAndCompletadoFalse();
+
+    }
+
+    /*
+        PROCESAR RECORDATORIO
+     */
+    public void procesarRecordatorio(
+            Recordatorio recordatorio
+    ) {
+
+        LocalDateTime ahora = LocalDateTime.now();
+
+        LocalDateTime fechaNotificacion =
+                recordatorio.getFechaLimite()
+                        .minusMinutes(
+                                recordatorio.getRecordarAntesMinutos()
+                        );
+
+        if (
+                ahora.isAfter(fechaNotificacion)
+                        && !recordatorio.getNotificado()
+        ) {
+
+            log.info(
+                    "NOTIFICAR RECORDATORIO: {}",
+                    recordatorio.getTitulo()
+            );
+
+            recordatorio.setNotificado(true);
+
+            recordatorio.setUltimaNotificacion(ahora);
+
+            if (
+                    Boolean.TRUE.equals(
+                            recordatorio.getRepetitivo()
+                    )
+            ) {
+
+                actualizarSiguienteFecha(recordatorio);
+
+            } else {
+
+                recordatorio.setArchivado(true);
+
+            }
+
+            recordatorioRepositorio.save(recordatorio);
+
+        }
+
+    }
+
+    /*
+        ACTUALIZAR FECHA
+     */
+    private void actualizarSiguienteFecha(
+            Recordatorio recordatorio
+    ) {
+
+        switch (
+                recordatorio.getTipoRepeticion()
+        ) {
+
+            case DIARIO ->
+
+                    recordatorio.setFechaLimite(
+                            recordatorio.getFechaLimite()
+                                    .plusDays(1)
+                    );
+
+            case SEMANAL ->
+
+                    recordatorio.setFechaLimite(
+                            recordatorio.getFechaLimite()
+                                    .plusWeeks(1)
+                    );
+
+            case MENSUAL ->
+
+                    recordatorio.setFechaLimite(
+                            recordatorio.getFechaLimite()
+                                    .plusMonths(1)
+                    );
+
+            case PERSONALIZADO ->
+
+                    recordatorio.setFechaLimite(
+                            recordatorio.getFechaLimite()
+                                    .plusDays(
+                                            recordatorio.getIntervaloDias()
+                                    )
+                    );
+
+        }
+
+        recordatorio.setNotificado(false);
+
+    }
+
+    /*
+        ESTADO VISUAL
+     */
+    public String calcularEstadoVisual(
+            Recordatorio recordatorio
+    ) {
+
+        if (recordatorio.getCompletado()) {
+
+            return "COMPLETADO";
+
+        }
+
+        if (
+                recordatorio.getFechaLimite()
+                        .isBefore(LocalDateTime.now())
+        ) {
+
+            return "VENCIDO";
+
+        }
+
+        if (
+                recordatorio.getFechaLimite()
+                        .minusHours(1)
+                        .isBefore(LocalDateTime.now())
+        ) {
+
+            return "PROXIMO";
+
+        }
+
+        return "PENDIENTE";
+
+    }
+
+    /*
+        DTO
+     */
+    private RecordatorioResponseDTO convertirDTO(
             Recordatorio recordatorio
     ) {
 
         return RecordatorioResponseDTO.builder()
+
                 .id(recordatorio.getId())
+
                 .titulo(recordatorio.getTitulo())
+
                 .mensaje(recordatorio.getMensaje())
-                .fechaRecordatorio(
-                        recordatorio.getFechaRecordatorio()
-                )
+
+                .fechaLimite(recordatorio.getFechaLimite())
+
+                .completado(recordatorio.getCompletado())
+
+                .archivado(recordatorio.getArchivado())
+
                 .repetitivo(recordatorio.getRepetitivo())
-                .intervaloHoras(
-                        recordatorio.getIntervaloHoras()
+
+                .prioridad(recordatorio.getPrioridad())
+
+                .categoria(recordatorio.getCategoria())
+
+                .color(recordatorio.getColor())
+
+                .estadoVisual(
+                        calcularEstadoVisual(recordatorio)
                 )
                 .build();
+
+    }
+
+    /*
+        VALIDAR PROPIETARIO
+     */
+    private void validarPropietario(
+            Recordatorio recordatorio,
+            Usuario usuario
+    ) {
+
+        if (
+                !recordatorio.getCreador()
+                        .getId()
+                        .equals(usuario.getId())
+        ) {
+
+            throw new RuntimeException(
+                    "No autorizado"
+            );
+
+        }
+    }
+    public void guardarRecordatoriosIA(
+            List<RecordatorioRequestDTO> tareas,
+            String username
+    ) {
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Recordatorio> nuevos = tareas.stream()
+                .map(dto -> Recordatorio.builder()
+                        .titulo(dto.getTitulo())
+                        .mensaje(dto.getMensaje())
+                        .fechaLimite(dto.getFechaLimite())
+                        .prioridad(dto.getPrioridad())
+                        .categoria(dto.getCategoria())
+                        .color("#6366f1")
+                        .completado(false)
+                        .archivado(false)
+                        .repetitivo(false)
+                        .creador(usuario)
+                        .build())
+                .toList();
+
+        recordatorioRepositorio.saveAll(nuevos);
     }
 }

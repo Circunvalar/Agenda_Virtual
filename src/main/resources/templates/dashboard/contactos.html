@@ -2,8 +2,8 @@
 <html
         lang="es"
         xmlns:th="http://www.thymeleaf.org"
-        class="h-full"
 >
+
 <head>
 
     <meta charset="UTF-8">
@@ -15,303 +15,110 @@
 
     <title>Contactos</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link
             href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
     >
 
-    <style>
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/layout.css}"
+    >
 
-        *{
-            font-family:'Inter',sans-serif;
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/contactos.css}"
+    >
+
+    <!-- EVITAR DESTELLO MODO OSCURO -->
+
+    <script>
+
+        if(localStorage.getItem('theme') === 'dark'){
+
+            document.documentElement.classList.add('dark');
+
         }
 
-    </style>
+    </script>
 
 </head>
 
-<body class="
-    bg-slate-100
-    dark:bg-slate-950
-    min-h-screen
-    transition
-">
+<body>
 
-<div class="flex min-h-screen">
+<div class="dashboard-layout">
 
     <!-- SIDEBAR -->
 
-    <aside class="
-        hidden
-        lg:flex
-        flex-col
-        justify-between
-        w-72
-        bg-white
-        dark:bg-slate-900
-        border-r
-        border-slate-200
-        dark:border-slate-800
-        p-6
-    ">
-
-        <div>
-
-            <h1 class="
-                text-3xl
-                font-bold
-                text-indigo-600
-                mb-10
-            ">
-                Agenda Virtual
-            </h1>
-
-            <nav class="space-y-3">
-
-                <a
-                        href="/dashboard"
-                        class="
-                            block
-                            px-5
-                            py-4
-                            rounded-2xl
-                            hover:bg-slate-100
-                            dark:hover:bg-slate-800
-                            transition
-                        "
-                >
-                    Dashboard
-                </a>
-
-                <a
-                        href="/eventos"
-                        class="
-                            block
-                            px-5
-                            py-4
-                            rounded-2xl
-                            hover:bg-slate-100
-                            dark:hover:bg-slate-800
-                            transition
-                        "
-                >
-                    Eventos
-                </a>
-
-                <a
-                        href="/tareas"
-                        class="
-                            block
-                            px-5
-                            py-4
-                            rounded-2xl
-                            hover:bg-slate-100
-                            dark:hover:bg-slate-800
-                            transition
-                        "
-                >
-                    Tareas
-                </a>
-
-                <a
-                        href="/recordatorios"
-                        class="
-                            block
-                            px-5
-                            py-4
-                            rounded-2xl
-                            hover:bg-slate-100
-                            dark:hover:bg-slate-800
-                            transition
-                        "
-                >
-                    Recordatorios
-                </a>
-
-                <a
-                        href="/contactos"
-                        class="
-                            block
-                            px-5
-                            py-4
-                            rounded-2xl
-                            bg-indigo-600
-                            text-white
-                            font-semibold
-                        "
-                >
-                    Contactos
-                </a>
-
-            </nav>
-
-        </div>
-
-        <a
-                href="/logout"
-                class="
-                    bg-red-500
-                    hover:bg-red-600
-                    text-white
-                    text-center
-                    py-4
-                    rounded-2xl
-                    font-semibold
-                    transition
-                "
-        >
-            Cerrar sesión
-        </a>
-
-    </aside>
+    <div
+            th:replace="~{fragments/sidebar :: sidebar('contactos')}"
+    ></div>
 
     <!-- MAIN -->
 
-    <main class="flex-1 p-6 lg:p-10">
+    <main class="main-content">
 
-        <!-- HEADER -->
+        <!-- TOPBAR -->
 
-        <div class="
-            flex
-            flex-col
-            lg:flex-row
-            justify-between
-            lg:items-center
-            gap-6
-            mb-10
-        ">
-
-            <div>
-
-                <h1 class="
-                    text-4xl
-                    font-bold
-                    text-slate-800
-                    dark:text-white
-                ">
-                    Contactos
-                </h1>
-
-                <p class="
-                    text-slate-500
-                    dark:text-slate-400
-                    mt-2
-                ">
-                    Gestiona tus contactos y eventos compartidos.
-                </p>
-
-            </div>
-
-        </div>
+        <div
+                th:replace="
+                ~{fragments/topbar ::
+                topbar(
+                    'Contactos',
+                    'Gestiona tus contactos y eventos compartidos'
+                )}
+            "
+        ></div>
 
         <!-- AGREGAR CONTACTO -->
 
-        <div class="
-            bg-white
-            dark:bg-slate-900
-            rounded-3xl
-            p-6
-            border
-            border-slate-200
-            dark:border-slate-800
-            mb-8
-        ">
+        <div class="dashboard-card mb-8">
 
             <form
                     action="/contactos/agregar"
                     method="post"
-                    class="
-                        flex
-                        flex-col
-                        md:flex-row
-                        gap-4
-                    "
+                    class="contact-form"
             >
 
                 <input
                         type="text"
                         name="telefono"
                         placeholder="Número telefónico"
-                        class="
-                            flex-1
-                            p-4
-                            rounded-2xl
-                            bg-slate-100
-                            dark:bg-slate-800
-                            dark:text-white
-                            border-0
-                            outline-none
-                        "
+                        class="input-style"
                         required
                 >
 
                 <button
                         type="submit"
-                        class="
-                            px-8
-                            py-4
-                            rounded-2xl
-                            bg-indigo-600
-                            hover:bg-indigo-700
-                            text-white
-                            font-semibold
-                            transition
-                        "
+                        class="primary-btn"
                 >
                     Agregar contacto
                 </button>
 
             </form>
+
             <!-- MENSAJE -->
 
             <div
                     th:if="${mensaje != null}"
                     th:text="${mensaje}"
-                    class="
-                mt-4
-                p-4
-                rounded-2xl
-                bg-indigo-100
-                dark:bg-indigo-900/30
-                text-indigo-700
-                dark:text-indigo-300
-                font-medium
-            "
-            >
-            </div>
+                    class="message-alert"
+            ></div>
+
         </div>
 
         <!-- VACIO -->
 
         <div
                 th:if="${#lists.isEmpty(contactos)}"
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    p-10
-                    text-center
-                    border
-                    border-slate-200
-                    dark:border-slate-800
-                "
+                class="dashboard-card empty-card"
         >
 
-            <h3 class="
-                text-2xl
-                font-bold
-                text-slate-700
-                dark:text-white
-            ">
+            <h3 class="empty-title">
                 No tienes contactos registrados
             </h3>
 
-            <p class="
-                mt-3
-                text-slate-500
-            ">
+            <p class="empty-subtitle">
                 Agrega contactos usando su número telefónico.
             </p>
 
@@ -319,65 +126,33 @@
 
         <!-- LISTA CONTACTOS -->
 
-        <div class="
-            grid
-            grid-cols-1
-            xl:grid-cols-2
-            gap-6
-        ">
+        <div class="contacts-grid">
 
             <div
                     th:each="contacto : ${contactos}"
-                    class="
-                        bg-white
-                        dark:bg-slate-900
-                        rounded-3xl
-                        p-6
-                        shadow-sm
-                        border
-                        border-slate-200
-                        dark:border-slate-800
-                    "
+                    class="dashboard-card contact-card"
             >
 
-                <div class="
-                    flex
-                    justify-between
-                    items-start
-                    gap-4
-                ">
+                <!-- HEADER -->
+
+                <div class="contact-header">
 
                     <div>
 
                         <h3
-                                class="
-                                    text-2xl
-                                    font-bold
-                                    text-slate-800
-                                    dark:text-white
-                                "
+                                class="contact-name"
                                 th:text="${contacto.nombreUsuario}"
-                        >
-                        </h3>
+                        ></h3>
 
                         <p
-                                class="
-                                    text-slate-500
-                                    mt-2
-                                "
+                                class="contact-phone"
                                 th:text="${contacto.telefono}"
-                        >
-                        </p>
+                        ></p>
 
                         <p
-                                class="
-                                    text-slate-500
-                                    text-sm
-                                    mt-1
-                                "
+                                class="contact-email"
                                 th:text="${contacto.correoElectronico}"
-                        >
-                        </p>
+                        ></p>
 
                     </div>
 
@@ -385,36 +160,16 @@
 
                 <!-- ESTADISTICAS -->
 
-                <div class="
-                    mt-6
-                    grid
-                    grid-cols-2
-                    gap-4
-                ">
+                <div class="stats-grid">
 
-                    <div class="
-                        bg-indigo-100
-                        dark:bg-indigo-900/30
-                        rounded-2xl
-                        p-4
-                    ">
+                    <div class="stat-box stat-indigo">
 
-                        <p class="
-                            text-xs
-                            text-indigo-700
-                            dark:text-indigo-300
-                        ">
+                        <p class="stat-label">
                             Eventos en común
                         </p>
 
                         <h4
-                                class="
-                                    text-3xl
-                                    font-bold
-                                    mt-2
-                                    text-indigo-800
-                                    dark:text-white
-                                "
+                                class="stat-value"
                                 th:text="${contacto.eventosEnComun}"
                         >
                             0
@@ -422,29 +177,14 @@
 
                     </div>
 
-                    <div class="
-                        bg-emerald-100
-                        dark:bg-emerald-900/30
-                        rounded-2xl
-                        p-4
-                    ">
+                    <div class="stat-box stat-green">
 
-                        <p class="
-                            text-xs
-                            text-emerald-700
-                            dark:text-emerald-300
-                        ">
+                        <p class="stat-label">
                             Te invitó a
                         </p>
 
                         <h4
-                                class="
-                                    text-3xl
-                                    font-bold
-                                    mt-2
-                                    text-emerald-800
-                                    dark:text-white
-                                "
+                                class="stat-value"
                                 th:text="${contacto.eventosInvitado}"
                         >
                             0
@@ -456,11 +196,7 @@
 
                 <!-- ACCIONES -->
 
-                <div class="
-                    mt-6
-                    flex
-                    justify-end
-                ">
+                <div class="contact-actions">
 
                     <form
                             th:action="@{'/contactos/eliminar/' + ${contacto.contactoId}}"
@@ -469,25 +205,41 @@
 
                         <button
                                 type="submit"
-                                class="
-                                    px-5
-                                    py-3
-                                    rounded-2xl
-                                    bg-red-500
-                                    hover:bg-red-600
-                                    text-white
-                                    font-medium
-                                    transition
-                                "
+                                class="delete-btn"
                         >
                             Eliminar contacto
                         </button>
+
                     </form>
+
                 </div>
+
             </div>
+
         </div>
+
     </main>
+
 </div>
+
+<script>
+
+    function toggleTheme(){
+
+        document.documentElement.classList.toggle('dark');
+
+        if(document.documentElement.classList.contains('dark')){
+
+            localStorage.setItem('theme','dark');
+
+        }else{
+
+            localStorage.setItem('theme','light');
+
+        }
+    }
+
+</script>
 
 </body>
 </html>

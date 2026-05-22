@@ -20,15 +20,55 @@ public class Recordatorio extends EntidadBase {
     @Column(nullable = false)
     private String titulo;
 
-    @Column(length = 1500)
+    @Column(length = 2000)
     private String mensaje;
 
     @Column(nullable = false)
-    private LocalDateTime fechaRecordatorio;
+    private LocalDateTime fechaLimite;
 
-    private Boolean repetitivo;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean completado = false;
 
-    private Integer intervaloHoras;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean archivado = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean notificado = false;
+
+    private LocalDateTime ultimaNotificacion;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer recordarAntesMinutos = 30;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean repetitivo = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private TipoRepeticion tipoRepeticion =
+            TipoRepeticion.SIN_REPETICION;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer intervaloDias = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PrioridadRecordatorio prioridad;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CategoriaRecordatorio categoria;
+
+    private String color;
+
+    private String archivoAdjunto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
@@ -41,4 +81,39 @@ public class Recordatorio extends EntidadBase {
             inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
     private List<Usuario> invitados;
+
+    @PrePersist
+    public void prePersist() {
+
+        if(completado == null){
+            completado = false;
+        }
+
+        if(archivado == null){
+            archivado = false;
+        }
+
+        if(notificado == null){
+            notificado = false;
+        }
+
+        if(repetitivo == null){
+            repetitivo = false;
+        }
+
+        if(recordarAntesMinutos == null){
+            recordarAntesMinutos = 30;
+        }
+
+        if(intervaloDias == null){
+            intervaloDias = 0;
+        }
+
+        if(tipoRepeticion == null){
+            tipoRepeticion =
+                    TipoRepeticion.SIN_REPETICION;
+        }
+
+    }
+
 }

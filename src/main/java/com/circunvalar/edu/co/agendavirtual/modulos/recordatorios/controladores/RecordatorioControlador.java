@@ -1,5 +1,6 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.controladores;
 
+import com.circunvalar.edu.co.agendavirtual.modulos.contactos.servicios.ContactosServicio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioRequestDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.servicios.RecordatorioServicio;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Controller
 @RequestMapping("/recordatorios")
 @RequiredArgsConstructor
@@ -15,6 +18,11 @@ public class RecordatorioControlador {
 
     private final RecordatorioServicio recordatorioServicio;
 
+    private final ContactosServicio contactosServicio;
+
+    /*
+        LISTAR
+     */
     @GetMapping
     public String listarRecordatorios(
             Authentication authentication,
@@ -23,14 +31,30 @@ public class RecordatorioControlador {
 
         model.addAttribute(
                 "recordatorios",
-                recordatorioServicio.obtenerRecordatoriosUsuario(
+                recordatorioServicio
+                        .obtenerRecordatoriosUsuario(
+                                authentication.getName()
+                        )
+        );
+
+        model.addAttribute(
+                "recordatorio",
+                new RecordatorioRequestDTO()
+        );
+
+        model.addAttribute(
+                "contactos",
+                contactosServicio.obtenerContactos(
                         authentication.getName()
                 )
         );
 
-        return "recordatorios";
+        return "dashboard/recordatorios";
     }
 
+    /*
+        CREAR
+     */
     @PostMapping
     public String crearRecordatorio(
             @ModelAttribute RecordatorioRequestDTO dto,
@@ -45,13 +69,52 @@ public class RecordatorioControlador {
         return "redirect:/recordatorios";
     }
 
-    @PostMapping("/delete/{id}")
-    public String eliminarRecordatorio(
-            @PathVariable String id,
+    /*
+        ACTUALIZAR
+     */
+    @PostMapping("/update/{id}")
+    public String actualizarRecordatorio(
+            @PathVariable UUID id,
+            @ModelAttribute RecordatorioRequestDTO dto,
             Authentication authentication
     ) {
 
-        recordatorioServicio.eliminarRecordatorio(
+        recordatorioServicio.actualizarRecordatorio(
+                id,
+                dto,
+                authentication.getName()
+        );
+
+        return "redirect:/recordatorios";
+    }
+
+    /*
+        COMPLETAR
+     */
+    @PostMapping("/complete/{id}")
+    public String completarRecordatorio(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+
+        recordatorioServicio.marcarCompletado(
+                id,
+                authentication.getName()
+        );
+
+        return "redirect:/recordatorios";
+    }
+
+    /*
+        ELIMINAR LOGICO
+     */
+    @PostMapping("/delete/{id}")
+    public String eliminarRecordatorio(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+
+        recordatorioServicio.archivarRecordatorio(
                 id,
                 authentication.getName()
         );

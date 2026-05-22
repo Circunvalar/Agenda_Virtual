@@ -19,6 +19,7 @@ import java.util.UUID;
 public class EventoControlador {
 
     private final EventoServicio eventoServicio;
+
     private final ContactosServicio contactosServicio;
 
     @GetMapping
@@ -29,7 +30,7 @@ public class EventoControlador {
 
         model.addAttribute(
                 "eventos",
-                eventoServicio.obtenerEventosUsuario(
+                eventoServicio.obtenerEventosDTOUsuario(
                         authentication.getName()
                 )
         );
@@ -76,13 +77,13 @@ public class EventoControlador {
 
         return "redirect:/eventos";
     }
+
     @PostMapping("/update/{id}")
     public String actualizarEvento(
             @PathVariable UUID id,
             @ModelAttribute Evento eventoActualizado,
-            @RequestParam(
-                    required = false
-            ) List<UUID> invitadosIds,
+            @RequestParam(required = false)
+            List<UUID> invitadosIds,
             Authentication auth
     ) {
 

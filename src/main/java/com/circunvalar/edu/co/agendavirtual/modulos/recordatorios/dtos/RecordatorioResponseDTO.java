@@ -1,15 +1,14 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos;
 
-import lombok.*;
+import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.CategoriaRecordatorio;
+import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.PrioridadRecordatorio;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class RecordatorioResponseDTO {
 
@@ -19,13 +18,27 @@ public class RecordatorioResponseDTO {
 
     private String mensaje;
 
-    private LocalDateTime fechaRecordatorio;
+    private LocalDateTime fechaLimite;
+
+    private Boolean completado;
+
+    private Boolean archivado;
 
     private Boolean repetitivo;
 
-    private Integer intervaloHoras;
+    // NUEVO
+    private Integer intervaloDias;
 
-    private String creador;
+    // NUEVO
+    private LocalDateTime proximaRepeticion;
 
-    private List<String> invitados;
+    private PrioridadRecordatorio prioridad;
+
+    private Integer recordarAntesMinutos;
+
+    private CategoriaRecordatorio categoria;
+
+    private String color;
+
+    private String estadoVisual;
 }

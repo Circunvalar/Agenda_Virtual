@@ -5,5 +5,6 @@ public enum EstadoEvento {
     PENDIENTE,
     EN_PROGRESO,
     FINALIZADO,
-    CANCELADO
+    CANCELADO,
+    CONFIRMADO
 }

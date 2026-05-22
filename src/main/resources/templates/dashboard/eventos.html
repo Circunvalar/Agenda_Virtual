@@ -29,6 +29,7 @@
             href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
     >
+
     <script>
 
         if(localStorage.getItem('theme') === 'dark'){
@@ -38,57 +39,58 @@
         }
 
     </script>
+
 </head>
 
 <body>
 
 <div class="dashboard-layout">
 
-    <!-- SIDEBAR -->
-
     <div
             th:replace="~{fragments/sidebar :: sidebar('eventos')}"
     ></div>
 
-    <!-- MAIN -->
-
     <main class="main-content">
 
-        <!-- TOPBAR -->
-
         <div
-                th:replace="
-        ~{fragments/topbar ::
-        topbar(
-            'Eventos',
-            'Organiza tus reuniones y actividades'
-        )}
-    "
+                th:replace="~{fragments/topbar :: topbar(
+                'Eventos',
+                'Gestiona tus eventos y reuniones'
+            )}"
         ></div>
-
-        <!-- HEADER ACTION -->
 
         <div class="events-header">
 
+            <div>
+
+                <h2 class="events-title">
+                    Mis eventos
+                </h2>
+
+                <p class="events-subtitle">
+                    Administra todos tus eventos.
+                </p>
+
+            </div>
+
             <button
-                    type="button"
-                    onclick="openCreateModal()"
                     class="primary-btn"
+                    onclick="openCreateModal()"
             >
-                + Nuevo Evento
+                + Crear evento
             </button>
 
         </div>
 
-        <!-- VACIO -->
+        <!-- SIN EVENTOS -->
 
         <div
                 th:if="${#lists.isEmpty(eventos)}"
-                class="empty-card"
+                class="empty-events"
         >
 
             <h3>
-                No tienes eventos registrados
+                No tienes eventos creados
             </h3>
 
             <p>
@@ -97,67 +99,97 @@
 
         </div>
 
-        <!-- LISTA -->
+        <!-- EVENTOS -->
 
-        <div class="events-grid">
+        <div
+                th:unless="${#lists.isEmpty(eventos)}"
+                class="events-grid"
+        >
 
             <div
-                    th:each="evento : ${eventos}"
                     class="event-card"
-                    th:attr="
-                        data-id=${evento.id},
-                        data-titulo=${evento.titulo},
-                        data-descripcion=${evento.descripcion},
-                        data-fechainicio=${evento.fechaInicio},
-                        data-fechafin=${evento.fechaFin},
-                        data-horainicio=${evento.horaInicio},
-                        data-horafin=${evento.horaFin},
-                        data-ubicacion=${evento.ubicacion},
-                        data-color=${evento.color},
-                        data-todoeldia=${evento.todoElDia}
-                    "
-                    onclick="openDetailsModal(this)"
+                    th:each="evento : ${eventos}"
             >
 
-                <div class="event-top">
+                <div
+                        class="event-color"
+                        th:style="'background:' + ${evento.color}"
+                ></div>
 
-                    <div>
+                <h3
+                        class="event-title"
+                        th:text="${evento.titulo}"
+                ></h3>
 
-                        <h3
-                                th:text="${evento.titulo}"
-                        ></h3>
+                <p
+                        class="event-description"
+                        th:text="${evento.descripcion}"
+                ></p>
 
-                        <p
-                                th:text="${evento.descripcion}"
-                        ></p>
+                <div class="event-info">
 
-                    </div>
+                    <span>
+                        📅
+                        <span th:text="${evento.fechaInicio}"></span>
+                        -
+                        <span th:text="${evento.fechaFin}"></span>
+                    </span>
 
-                    <div
-                            class="event-color"
-                            th:style="'background:'+${evento.color}"
-                    ></div>
+                    <span th:if="${!evento.todoElDia}">
+                        ⏰
+                        <span th:text="${evento.horaInicio}"></span>
+                        -
+                        <span th:text="${evento.horaFin}"></span>
+                    </span>
 
-                </div>
-
-                <div class="event-tags">
+                    <span>
+                        📍
+                        <span th:text="${evento.ubicacion}"></span>
+                    </span>
 
                     <span
-                            class="tag-date"
-                            th:text="${evento.fechaInicio}"
-                    ></span>
-
-                    <span
-                            class="tag-status"
+                            class="event-badge"
                             th:text="${evento.estado}"
                     ></span>
 
-                    <span
-                            th:if="${evento.todoElDia}"
-                            class="tag-all-day"
+                </div>
+
+                <div class="event-actions">
+
+                    <button
+                            class="secondary-btn"
+                            th:attr="
+                            data-id=${evento.id},
+                            data-titulo=${evento.titulo},
+                            data-descripcion=${evento.descripcion},
+                            data-fechainicio=${evento.fechaInicio},
+                            data-fechafin=${evento.fechaFin},
+                            data-horainicio=${evento.horaInicio},
+                            data-horafin=${evento.horaFin},
+                            data-todoeldia=${evento.todoElDia},
+                            data-ubicacion=${evento.ubicacion},
+                            data-color=${evento.color},
+                            data-estado=${evento.estado}
+                        "
+                            onclick="openEditModal(this)"
                     >
-                        Todo el día
-                    </span>
+                        Editar
+                    </button>
+
+                    <form
+                            th:action="@{/eventos/delete/{id}(id=${evento.id})}"
+                            method="post"
+                            style="flex:1;"
+                    >
+
+                        <button
+                                type="submit"
+                                class="danger-btn"
+                        >
+                            Eliminar
+                        </button>
+
+                    </form>
 
                 </div>
 
@@ -169,190 +201,195 @@
 
 </div>
 
-<!-- MODAL -->
+<!-- MODAL CREAR -->
 
 <div
-        id="modal"
-        class="modal-overlay hidden"
-        onclick="outsideClick(event)"
+        class="modal-overlay"
+        id="createModal"
 >
 
-    <div class="modal-content">
+    <div class="modal">
 
-        <!-- CERRAR -->
+        <div class="modal-header">
 
-        <button
-                type="button"
-                onclick="attemptCloseModal()"
-                class="close-btn"
-        >
-            ×
-        </button>
+            <h2>
+                Crear evento
+            </h2>
 
-        <!-- ALERTA -->
+            <button
+                    class="close-btn"
+                    onclick="attemptCloseModal('createModal')"
+            >
+                ✖
+            </button>
 
-        <div
-                id="warningBox"
-                class="warning-box hidden"
-        >
-            No puedes cerrar sin guardar cambios.
         </div>
 
-        <h2
-                id="modalTitle"
-                class="modal-title"
-        >
-            Nuevo Evento
-        </h2>
-
         <form
-                id="eventoForm"
+                th:action="@{/eventos}"
                 method="post"
-                class="event-form"
+                id="createForm"
         >
-
-            <input
-                    type="hidden"
-                    id="eventoId"
-                    name="id"
-            >
-
-            <input
-                    type="text"
-                    id="titulo"
-                    name="titulo"
-                    placeholder="Título"
-                    class="input-style"
-                    required
-            >
-
-            <textarea
-                    id="descripcion"
-                    name="descripcion"
-                    placeholder="Descripción"
-                    rows="4"
-                    class="input-style"
-            ></textarea>
-
-            <!-- TODO EL DIA -->
-
-            <label class="checkbox-container">
-
-                <input
-                        type="checkbox"
-                        id="todoElDia"
-                        name="todoElDia"
-                        onchange="toggleHoras()"
-                >
-
-                <span>
-                    Todo el día
-                </span>
-
-            </label>
-
-            <!-- FECHAS -->
 
             <div class="form-grid">
 
-                <input
-                        type="date"
-                        id="fechaInicio"
-                        name="fechaInicio"
-                        class="input-style"
-                        required
-                >
+                <div class="form-group form-group-full">
 
-                <input
-                        type="date"
-                        id="fechaFin"
-                        name="fechaFin"
-                        class="input-style"
-                        required
-                >
+                    <label>Título</label>
+
+                    <input
+                            type="text"
+                            name="titulo"
+                            class="form-input"
+                            required
+                    >
+
+                </div>
+
+                <div class="form-group form-group-full">
+
+                    <label>Descripción</label>
+
+                    <textarea
+                            name="descripcion"
+                            class="form-textarea"
+                    ></textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Fecha inicio</label>
+
+                    <input
+                            type="date"
+                            name="fechaInicio"
+                            class="form-input"
+                            required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Fecha fin</label>
+
+                    <input
+                            type="date"
+                            name="fechaFin"
+                            class="form-input"
+                            required
+                    >
+
+                </div>
+
+                <div class="form-group horas-container">
+
+                    <label>Hora inicio</label>
+
+                    <input
+                            type="time"
+                            name="horaInicio"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group horas-container">
+
+                    <label>Hora fin</label>
+
+                    <input
+                            type="time"
+                            name="horaFin"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Ubicación</label>
+
+                    <input
+                            type="text"
+                            name="ubicacion"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Color</label>
+
+                    <input
+                            type="color"
+                            name="color"
+                            value="#6366f1"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Estado</label>
+
+                    <select
+                            name="estado"
+                            class="form-select"
+                    >
+
+                        <option value="PENDIENTE">PENDIENTE</option>
+                        <option value="EN_PROGRESO">EN PROGRESO</option>
+                        <option value="FINALIZADO">FINALIZADO</option>
+                        <option value="CANCELADO">CANCELADO</option>
+                        <option value="CONFIRMADO">CONFIRMADO</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group form-group-full">
+
+                    <div class="checkbox-group">
+
+                        <input
+                                type="checkbox"
+                                name="todoElDia"
+                                value="true"
+                                onchange="toggleHoras(this)"
+                        >
+
+                        <label>
+                            Todo el día
+                        </label>
+
+                    </div>
+
+                </div>
 
             </div>
 
-            <!-- HORAS -->
-
-            <div
-                    id="horasContainer"
-                    class="form-grid"
-            >
-
-                <input
-                        type="time"
-                        id="horaInicio"
-                        name="horaInicio"
-                        class="input-style"
-                >
-
-                <input
-                        type="time"
-                        id="horaFin"
-                        name="horaFin"
-                        class="input-style"
-                >
-
-            </div>
-
-            <!-- UBICACION -->
-
-            <input
-                    type="text"
-                    id="ubicacion"
-                    name="ubicacion"
-                    placeholder="Ubicación"
-                    class="input-style"
-            >
-
-            <!-- COLOR -->
-
-            <input
-                    type="color"
-                    id="color"
-                    name="color"
-                    class="color-input"
-            >
-
-            <!-- BOTONES -->
-
-            <div class="button-group">
-
-                <button
-                        id="saveBtn"
-                        type="submit"
-                        class="save-btn"
-                >
-                    Guardar cambios
-                </button>
+            <div class="modal-actions">
 
                 <button
                         type="button"
-                        onclick="forceCloseModal()"
                         class="cancel-btn"
+                        onclick="attemptCloseModal('createModal')"
                 >
                     Cancelar
                 </button>
 
+                <button
+                        type="submit"
+                        class="save-btn"
+                >
+                    Guardar evento
+                </button>
+
             </div>
-
-        </form>
-
-        <!-- ELIMINAR -->
-
-        <form
-                id="deleteForm"
-                method="post"
-                class="delete-form"
-        >
-
-            <button
-                    type="submit"
-                    class="delete-btn"
-            >
-                Eliminar Evento
-            </button>
 
         </form>
 
@@ -360,159 +397,217 @@
 
 </div>
 
-<script>
+<!-- MODAL EDITAR -->
 
-    const modal = document.getElementById('modal');
+<div
+        class="modal-overlay"
+        id="editModal"
+>
 
-    let editMode = false;
+    <div class="modal">
 
-    function openCreateModal() {
+        <div class="modal-header">
 
-        editMode = false;
+            <h2>
+                Editar evento
+            </h2>
 
-        document.getElementById('modalTitle').innerText = 'Nuevo Evento';
+            <button
+                    class="close-btn"
+                    onclick="attemptCloseModal('editModal')"
+            >
+                ✖
+            </button>
 
-        document.getElementById('eventoForm').action = '/eventos';
+        </div>
 
-        document.getElementById('deleteForm').classList.add('hidden');
+        <form
+                method="post"
+                id="editForm"
+        >
 
-        document.getElementById('eventoId').value = '';
-        document.getElementById('titulo').value = '';
-        document.getElementById('descripcion').value = '';
-        document.getElementById('fechaInicio').value = '';
-        document.getElementById('fechaFin').value = '';
-        document.getElementById('horaInicio').value = '';
-        document.getElementById('horaFin').value = '';
-        document.getElementById('ubicacion').value = '';
-        document.getElementById('color').value = '#6366f1';
-        document.getElementById('todoElDia').checked = false;
+            <div class="form-grid">
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+                <div class="form-group form-group-full">
 
-        toggleHoras();
-    }
+                    <label>Título</label>
 
-    function openDetailsModal(card) {
+                    <input
+                            type="text"
+                            name="titulo"
+                            id="editTitulo"
+                            class="form-input"
+                            required
+                    >
 
-        editMode = true;
+                </div>
 
-        document.getElementById('modalTitle').innerText = 'Editar Evento';
+                <div class="form-group form-group-full">
 
-        const id = card.dataset.id;
+                    <label>Descripción</label>
 
-        document.getElementById('eventoForm').action =
-            '/eventos/update/' + id;
+                    <textarea
+                            name="descripcion"
+                            id="editDescripcion"
+                            class="form-textarea"
+                    ></textarea>
 
-        document.getElementById('deleteForm').action =
-            '/eventos/delete/' + id;
+                </div>
 
-        document.getElementById('deleteForm').classList.remove('hidden');
+                <div class="form-group">
 
-        document.getElementById('eventoId').value = id;
+                    <label>Fecha inicio</label>
 
-        document.getElementById('titulo').value =
-            card.dataset.titulo || '';
+                    <input
+                            type="date"
+                            name="fechaInicio"
+                            id="editFechaInicio"
+                            class="form-input"
+                            required
+                    >
 
-        document.getElementById('descripcion').value =
-            card.dataset.descripcion || '';
+                </div>
 
-        document.getElementById('fechaInicio').value =
-            card.dataset.fechainicio || '';
+                <div class="form-group">
 
-        document.getElementById('fechaFin').value =
-            card.dataset.fechafin || '';
+                    <label>Fecha fin</label>
 
-        document.getElementById('horaInicio').value =
-            card.dataset.horainicio || '';
+                    <input
+                            type="date"
+                            name="fechaFin"
+                            id="editFechaFin"
+                            class="form-input"
+                            required
+                    >
 
-        document.getElementById('horaFin').value =
-            card.dataset.horafin || '';
+                </div>
 
-        document.getElementById('ubicacion').value =
-            card.dataset.ubicacion || '';
+                <div class="form-group horas-container">
 
-        document.getElementById('color').value =
-            card.dataset.color || '#6366f1';
+                    <label>Hora inicio</label>
 
-        document.getElementById('todoElDia').checked =
-            card.dataset.todoeldia === 'true';
+                    <input
+                            type="time"
+                            name="horaInicio"
+                            id="editHoraInicio"
+                            class="form-input"
+                    >
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+                </div>
 
-        toggleHoras();
-    }
+                <div class="form-group horas-container">
 
-    function toggleHoras() {
+                    <label>Hora fin</label>
 
-        const todoElDia =
-            document.getElementById('todoElDia').checked;
+                    <input
+                            type="time"
+                            name="horaFin"
+                            id="editHoraFin"
+                            class="form-input"
+                    >
 
-        const horasContainer =
-            document.getElementById('horasContainer');
+                </div>
 
-        if(todoElDia){
+                <div class="form-group">
 
-            horasContainer.classList.add('hidden');
+                    <label>Ubicación</label>
 
-        }else{
+                    <input
+                            type="text"
+                            name="ubicacion"
+                            id="editUbicacion"
+                            class="form-input"
+                    >
 
-            horasContainer.classList.remove('hidden');
+                </div>
 
-        }
-    }
+                <div class="form-group">
 
-    function attemptCloseModal() {
+                    <label>Color</label>
 
-        if(editMode){
+                    <input
+                            type="color"
+                            name="color"
+                            id="editColor"
+                            class="form-input"
+                    >
 
-            const warning =
-                document.getElementById('warningBox');
+                </div>
 
-            warning.classList.remove('hidden');
+                <div class="form-group">
 
-            return;
-        }
+                    <label>Estado</label>
 
-        forceCloseModal();
-    }
+                    <select
+                            name="estado"
+                            id="editEstado"
+                            class="form-select"
+                    >
 
-    function forceCloseModal() {
+                        <option value="PENDIENTE">PENDIENTE</option>
+                        <option value="EN_PROGRESO">EN PROGRESO</option>
+                        <option value="FINALIZADO">FINALIZADO</option>
+                        <option value="CANCELADO">CANCELADO</option>
+                        <option value="CONFIRMADO">CONFIRMADO</option>
 
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+                    </select>
 
-        document
-            .getElementById('warningBox')
-            .classList.add('hidden');
-    }
+                </div>
 
-    function outsideClick(event) {
+                <div class="form-group form-group-full">
 
-        if(event.target === modal){
+                    <div class="checkbox-group">
 
-            attemptCloseModal();
+                        <input
+                                type="checkbox"
+                                name="todoElDia"
+                                id="editTodoElDia"
+                                onchange="toggleHoras(this)"
+                        >
 
-        }
-    }
+                        <label>
+                            Todo el día
+                        </label>
 
-    function toggleTheme() {
+                    </div>
 
-        document.documentElement.classList.toggle('dark');
+                </div>
 
-        if(document.documentElement.classList.contains('dark')){
+            </div>
 
-            localStorage.setItem('theme', 'dark');
+            <div class="modal-actions">
 
-        }else{
+                <button
+                        type="button"
+                        class="cancel-btn"
+                        onclick="attemptCloseModal('editModal')"
+                >
+                    Cancelar
+                </button>
 
-            localStorage.setItem('theme', 'light');
+                <button
+                        type="submit"
+                        class="save-btn"
+                >
+                    Guardar cambios
+                </button>
 
-        }
-    }
+            </div>
 
-</script>
+        </form>
+
+    </div>
+
+</div>
+
+<script
+        th:src="@{/js/dashboard/layout.js}"
+></script>
+
+<script
+        th:src="@{/js/dashboard/eventos.js}"
+></script>
 
 </body>
 </html>
+

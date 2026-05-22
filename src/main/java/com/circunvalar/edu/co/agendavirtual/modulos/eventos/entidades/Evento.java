@@ -44,12 +44,10 @@ public class Evento extends EntidadBase {
     @Enumerated(EnumType.STRING)
     private EstadoEvento estado;
 
-    // Usuario dueño del evento
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario creador;
 
-    // Invitados
     @ManyToMany
     @JoinTable(
             name = "evento_invitados",
@@ -57,4 +55,16 @@ public class Evento extends EntidadBase {
             inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
     private List<Usuario> invitados;
+
+    public String getInvitadosIds() {
+
+        if (invitados == null || invitados.isEmpty()) {
+            return "";
+        }
+
+        return invitados.stream()
+                .map(usuario -> usuario.getId().toString())
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+    }
 }
