@@ -166,33 +166,43 @@ public class RecordatorioServicio {
 
         recordatorio.setFechaLimite(dto.getFechaLimite());
 
-        recordatorio.setRecordarAntesMinutos(
-                dto.getRecordarAntesMinutos()
-        );
+        // Evitar asignar valores nulos a columnas NOT NULL en la entidad.
+        // Si el DTO no trae el campo (p. ej. checkbox no marcado), conservamos el valor existente
+        // o aplicamos un default seguro.
 
-        recordatorio.setRepetitivo(
-                dto.getRepetitivo()
-        );
+        if (dto.getRecordarAntesMinutos() != null) {
+            recordatorio.setRecordarAntesMinutos(dto.getRecordarAntesMinutos());
+        }
 
-        recordatorio.setTipoRepeticion(
-                dto.getTipoRepeticion()
-        );
+        // Para checkbox 'repetitivo' tratamos la ausencia como 'false' (unchecked).
+        boolean repet = dto.getRepetitivo() != null ? dto.getRepetitivo() : false;
+        recordatorio.setRepetitivo(repet);
 
-        recordatorio.setIntervaloDias(
-                dto.getIntervaloDias()
-        );
+        if (dto.getTipoRepeticion() != null) {
+            recordatorio.setTipoRepeticion(dto.getTipoRepeticion());
+        } else if (!repet) {
+            // si no es repetitivo, garantizamos SIN_REPETICION
+            recordatorio.setTipoRepeticion(TipoRepeticion.SIN_REPETICION);
+        }
 
-        recordatorio.setPrioridad(
-                dto.getPrioridad()
-        );
+        if (dto.getIntervaloDias() != null) {
+            recordatorio.setIntervaloDias(dto.getIntervaloDias());
+        } else if (!repet) {
+            // si no es repetitivo, dejamos intervalo en 0 para no incumplir NOT NULL
+            recordatorio.setIntervaloDias(0);
+        }
 
-        recordatorio.setCategoria(
-                dto.getCategoria()
-        );
+        if (dto.getPrioridad() != null) {
+            recordatorio.setPrioridad(dto.getPrioridad());
+        }
 
-        recordatorio.setColor(
-                dto.getColor()
-        );
+        if (dto.getCategoria() != null) {
+            recordatorio.setCategoria(dto.getCategoria());
+        }
+
+        if (dto.getColor() != null) {
+            recordatorio.setColor(dto.getColor());
+        }
 
         if (dto.getInvitadosIds() != null) {
 

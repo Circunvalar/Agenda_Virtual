@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html
+        lang="es"
+        xmlns:th="http://www.thymeleaf.org"
+>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Calendario
+    </title>
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/layout.css}"
+    >
+
+    <link
+            rel="stylesheet"
+            th:href="@{/css/dashboard/calendario.css}"
+    >
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    >
+
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css"
+    >
+
+    <script>
+        if(localStorage.getItem('theme') === 'dark'){
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+    <div
+            th:replace="~{fragments/sidebar :: sidebar('calendario')}"
+    ></div>
+
+    <main class="main-content">
+
+        <div
+                th:replace="~{fragments/topbar :: topbar(
+                    'Calendario',
+                    'Vista diaria, semanal y mensual de tus eventos y recordatorios'
+                )}"
+        ></div>
+
+        <div class="calendar-layout">
+
+            <section class="calendar-panel">
+                <div id="calendar"></div>
+            </section>
+
+            <aside class="day-panel">
+                <div class="day-panel-header">
+                    <h3 id="dayTitle">Selecciona un día</h3>
+                    <span id="dayBadge" class="day-badge">0</span>
+                </div>
+                <div id="dayList" class="day-list">
+                    <p class="day-empty">No hay eventos o recordatorios para este día.</p>
+                </div>
+            </aside>
+
+        </div>
+
+        <div
+                class="cal-modal-overlay"
+                id="calModal"
+                aria-hidden="true"
+        >
+            <div class="cal-modal" role="dialog" aria-modal="true">
+                <div class="cal-modal-header">
+                    <h3 id="calModalTitle">Detalle</h3>
+                    <button
+                            type="button"
+                            class="cal-modal-close"
+                            id="calModalClose"
+                    >
+                        ✖
+                    </button>
+                </div>
+                <div class="cal-modal-body">
+                    <div class="cal-modal-grid">
+                        <div class="cal-modal-item">
+                            <span class="cal-modal-label">Tipo</span>
+                            <span id="calModalTipo">-</span>
+                        </div>
+                        <div class="cal-modal-item">
+                            <span class="cal-modal-label">Fecha</span>
+                            <span id="calModalFecha">-</span>
+                        </div>
+                        <div class="cal-modal-item">
+                            <span class="cal-modal-label">Hora</span>
+                            <span id="calModalHora">-</span>
+                        </div>
+                        <div class="cal-modal-item">
+                            <span class="cal-modal-label">Detalle</span>
+                            <span id="calModalDetalle">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script th:src="@{/js/dashboard/layout.js}"></script>
+<script th:src="@{/js/dashboard/calendario.js}"></script>
+
+</body>
+</html>

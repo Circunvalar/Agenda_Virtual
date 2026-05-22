@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:16
     container_name: agenda-postgres
+    profiles: ["dev"]
     environment:
       POSTGRES_DB: AgendaVirtual
       POSTGRES_USER: ADMINISTRADOR
@@ -16,9 +17,14 @@ services:
     container_name: agendavirtual-app
     ports:
       - "4444:4444"
-    depends_on:
-      - postgres
+    # NOTE: do not automatically depend on the local postgres service.
+    # When developing locally with Docker you can enable the postgres service
+    # by using the "dev" profile: `docker compose --profile dev up`.
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/AgendaVirtual
-      SPRING_DATASOURCE_USERNAME: ADMINISTRADOR
-      SPRING_DATASOURCE_PASSWORD: 12345
+      # Prefer environment variables for datasource configuration. For local
+      # docker-compose (dev) you can set SPRING_DATASOURCE_URL to
+      # jdbc:postgresql://postgres:5432/AgendaVirtual
+      # Use POSIX-style default substitution to avoid compose interpolation errors
+      SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5432/agenda_virtual}"
+      SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME:-ADMINISTRADOR}"
+      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD:-123456}"

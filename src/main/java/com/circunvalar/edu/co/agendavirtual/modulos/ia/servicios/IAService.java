@@ -11,17 +11,26 @@ import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.repositorios.R
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.net.UnknownHostException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
+import java.net.InetAddress;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +46,9 @@ public class IAService {
 
     private final RecordatorioRepositorio recordatorioRepositorio;
 
+    @Value("${ai.provider.url:api-inference.huggingface.co}")
+    private String aiProviderUrl;
+
     public IAResponseDTO procesarMensaje(
             String mensajeUsuario
     ) {
@@ -45,26 +57,11 @@ public class IAService {
                 mensajeUsuario
         );
 
-        JSONObject body = new JSONObject();
+        // Llamar al proveedor de IA (Hugging Face)
+        String respuesta = callHuggingFace(prompt);
 
-        body.put("model", "phi3");
-
-        body.put("prompt", prompt);
-
-        body.put("stream", false);
-
-        String respuesta = webClient.post()
-                .uri("/api/generate")
-                .bodyValue(body.toString())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        JSONObject jsonRespuesta =
-                new JSONObject(respuesta);
-
-        String contenido =
-                jsonRespuesta.getString("response");
+        // La respuesta ya debe ser el texto generado por el modelo
+        String contenido = respuesta;
 
         log.info("RESPUESTA IA: {}", contenido);
 
@@ -210,6 +207,107 @@ public class IAService {
         }
 
     }
+
+    /**
+     * Helper que llama al endpoint de Hugging Face.
+     * Envía {"inputs": prompt, "options": {"wait_for_model": true}}
+     * y devuelve el texto generado por el modelo. Intenta extraer
+     * "generated_text" si la respuesta viene en formato JSON.
+     */
+    private String callHuggingFace(String prompt){
+
+        try{
+
+            // Cohere-style payload
+            Map<String,Object> payload = new HashMap<>();
+            payload.put("model", "command-xsmall-nightly");
+            payload.put("prompt", prompt);
+            payload.put("max_tokens", 300);
+            payload.put("temperature", 0.2);
+
+            String response = webClient.post()
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            if(response == null) return "";
+
+            try{
+                JsonNode node = objectMapper.readTree(response);
+
+                // Cohere / some inference APIs: { generations: [ { text: "..." } ] }
+                if(node.has("generations") && node.get("generations").isArray() && node.get("generations").size() > 0){
+                    return node.get("generations").get(0).path("text").asText("");
+                }
+
+                // Ollama-like: { results: [ { content: [ { type: "output_text", text: "..." } ] } ] }
+                if(node.has("results") && node.get("results").isArray() && node.get("results").size() > 0){
+                    JsonNode firstResult = node.get("results").get(0);
+                    if(firstResult.has("content") && firstResult.get("content").isArray() && firstResult.get("content").size() > 0){
+                        for(JsonNode contentNode : firstResult.get("content")){
+                            if(contentNode.has("text")){
+                                String t = contentNode.path("text").asText("");
+                                if(!t.isBlank()) return t;
+                            }
+                            if(contentNode.has("type") && contentNode.path("type").asText().equals("output_text") && contentNode.has("text")){
+                                String t = contentNode.path("text").asText("");
+                                if(!t.isBlank()) return t;
+                            }
+                        }
+                    }
+                    // Some versions may include a `text` at the result root
+                    if(firstResult.has("text")){
+                        String t = firstResult.path("text").asText("");
+                        if(!t.isBlank()) return t;
+                    }
+                }
+
+                // OpenAI-style / HF chat outputs: { choices: [ { message: { content: "..." } } ] } or choices[0].text
+                if(node.has("choices") && node.get("choices").isArray() && node.get("choices").size() > 0){
+                    JsonNode choice = node.get("choices").get(0);
+                    if(choice.has("text")){
+                        String t = choice.path("text").asText("");
+                        if(!t.isBlank()) return t;
+                    }
+                    if(choice.has("message") && choice.get("message").has("content")){
+                        String t = choice.get("message").path("content").asText("");
+                        if(!t.isBlank()) return t;
+                    }
+                }
+
+                // Fallback: devolver la representación cruda
+                return response;
+
+            }catch(Exception e){
+                // No es JSON o no contiene campos esperados
+                return response;
+            }
+
+        }catch(Exception e){
+
+            // Buscar la causa raíz
+            Throwable root = e;
+            while(root.getCause() != null){
+                root = root.getCause();
+            }
+
+            if(root instanceof UnknownHostException){
+                String host = aiProviderUrl;
+                String msg = "No se pudo resolver el host para el proveedor IA (" + host + "). \n" +
+                        "Verifica que la máquina tenga conexión a Internet, que el DNS funcione, o si necesitas configurar un proxy/firewall.\n" +
+                        "Mensaje original: " + root.getMessage();
+
+                log.error(msg, e);
+
+                throw new RuntimeException(msg, e);
+            }
+
+            log.error("ERROR llamando al proveedor IA", e);
+            throw new RuntimeException("Error llamando al proveedor IA", e);
+        }
+
+    }
     public String organizarDia(
             String mensajeUsuario
     ) {
@@ -276,20 +374,10 @@ Texto del usuario:
                 false
         );
 
-        String respuesta =
-                webClient.post()
-                        .uri("/api/generate")
-                        .bodyValue(body.toString())
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
+        // Llamamos al proveedor con el prompt ya construido
+        String respuesta = callHuggingFace(prompt);
 
-        JSONObject json =
-                new JSONObject(respuesta);
-
-        return json.getString(
-                "response"
-        );
+        return respuesta;
     }
     public String analizarTareas(String mensajeUsuario) {
 
@@ -330,14 +418,10 @@ Texto del usuario:
 
         body.put("stream", false);
 
-        Map response = webClient.post()
-                .uri("/api/generate")
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        // Llamada al proveedor de IA
+        String respuesta = callHuggingFace(prompt);
 
-        return response.get("response").toString();
+        return respuesta;
     }
     public List<IARecordatorioDTO> interpretarTareas(
             String mensaje
@@ -459,15 +543,8 @@ MENSAJE USUARIO:
 
         request.put("temperature", 0.1);
 
-        Map response = webClient.post()
-                .uri("/api/generate")
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String respuestaIA =
-                response.get("response").toString();
+        // Llamada al proveedor de IA
+        String respuestaIA = callHuggingFace(prompt);
 
         log.info(
                 "RESPUESTA IA INTERPRETAR: {}",
@@ -762,6 +839,57 @@ MENSAJE USUARIO:
 
         return LocalDateTime.now()
                 .plusHours(2);
+
+    }
+
+    /**
+     * Diagnóstico rápido para comprobar resolución DNS y conectividad HTTP
+     * hacia el proveedor configurado en `ai.provider.url`.
+     * Devuelve un Map con información de host, ips, y estado HTTP si es posible.
+     */
+    public Map<String,Object> diagnosticarProveedor(){
+
+        Map<String,Object> resultado = new HashMap<>();
+
+        try{
+            String raw = aiProviderUrl == null ? "" : aiProviderUrl;
+            String urlStr = raw;
+            if(!urlStr.startsWith("http")){
+                urlStr = "https://" + urlStr;
+            }
+
+            URI uri = new URI(urlStr);
+            String host = uri.getHost();
+
+            resultado.put("configuredUrl", urlStr);
+            resultado.put("host", host);
+
+            InetAddress[] addrs = InetAddress.getAllByName(host);
+            List<String> ips = Arrays.stream(addrs)
+                    .map(InetAddress::getHostAddress)
+                    .collect(Collectors.toList());
+
+            resultado.put("resolvedIps", ips);
+
+        }catch(Exception e){
+            resultado.put("dnsError", e.toString());
+        }
+
+        // Intentar una llamada HTTP ligera al baseUrl para ver si responde
+        try{
+            // Usamos GET vacío para obtener el status (puede devolver 401/403 si falta auth)
+            Integer status = webClient.get()
+                    .uri("")
+                    .exchangeToMono(resp -> reactor.core.publisher.Mono.just(resp.statusCode().value()))
+                    .block(Duration.ofSeconds(10));
+
+            resultado.put("httpStatus", status);
+
+        }catch(Exception e){
+            resultado.put("httpError", e.toString());
+        }
+
+        return resultado;
 
     }
 }

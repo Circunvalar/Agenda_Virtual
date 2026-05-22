@@ -9,8 +9,8 @@
     <meta charset="UTF-8">
 
     <meta
-            content="width=device-width, initial-scale=1.0"
             name="viewport"
+            content="width=device-width, initial-scale=1.0"
     >
 
     <title>
@@ -34,7 +34,7 @@
 
     <script>
 
-        if (localStorage.getItem('theme') === 'dark') {
+        if(localStorage.getItem('theme') === 'dark'){
 
             document.documentElement.classList.add('dark');
 
@@ -159,15 +159,15 @@
         <div class="filters-container">
 
             <input
-                    class="search-input"
-                    id="searchInput"
-                    placeholder="Buscar recordatorio..."
                     type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Buscar recordatorio..."
             >
 
             <select
-                    class="filter-select"
                     id="priorityFilter"
+                    class="filter-select"
             >
 
                 <option value="">
@@ -189,8 +189,8 @@
             </select>
 
             <select
-                    class="filter-select"
                     id="categoryFilter"
+                    class="filter-select"
             >
 
                 <option value="">
@@ -232,8 +232,8 @@
         <!-- EMPTY -->
 
         <div
-                class="empty-state"
                 th:if="${#lists.isEmpty(recordatorios)}"
+                class="empty-state"
         >
 
             <h3>
@@ -249,17 +249,17 @@
         <!-- LIST -->
 
         <div
-                class="recordatorios-list"
                 th:unless="${#lists.isEmpty(recordatorios)}"
+                class="recordatorios-list"
         >
 
             <div
                     class="recordatorio-card"
+                    th:each="recordatorio : ${recordatorios}"
                     th:attr="
                         data-prioridad=${recordatorio.prioridad},
                         data-categoria=${recordatorio.categoria}
                     "
-                    th:each="recordatorio : ${recordatorios}"
             >
 
                 <div
@@ -274,13 +274,13 @@
                         <div class="recordatorio-title-group">
 
                             <form
-                                    method="post"
                                     th:action="@{/recordatorios/complete/{id}(id=${recordatorio.id})}"
+                                    method="post"
                             >
 
                                 <button
-                                        class="checkbox-btn"
                                         type="submit"
+                                        class="checkbox-btn"
                                 >
                                     ✓
                                 </button>
@@ -357,30 +357,29 @@
                                     onclick="openEditModal(this)"
 
                                     th:attr="
-                                    data-id=${recordatorio.id},
-                                    data-titulo=${recordatorio.titulo},
-                                    data-mensaje=${recordatorio.mensaje},
-                                    data-fecha=${recordatorio.fechaLimite},
-                                    data-prioridad=${recordatorio.prioridad},
-                                    data-categoria=${recordatorio.categoria},
-                                    data-color=${recordatorio.color},
-                                    data-repetitivo=${recordatorio.repetitivo},
-                                    data-intervalodias=${recordatorio.intervaloDias},
-                                    data-recordarantes=${recordatorio.recordarAntesMinutos},
-                                    data-tiporepeticion=${recordatorio.tipoRepeticion}
-                            "
+                                        data-id=${recordatorio.id},
+                                        data-titulo=${recordatorio.titulo},
+                                        data-mensaje=${recordatorio.mensaje},
+                                        data-fecha=${recordatorio.fechaLimite},
+                                        data-prioridad=${recordatorio.prioridad},
+                                        data-categoria=${recordatorio.categoria},
+                                        data-color=${recordatorio.color},
+                                        data-repetitivo=${recordatorio.repetitivo},
+                                        data-intervalodias=${recordatorio.intervaloDias},
+                                        data-recordarantes=${recordatorio.recordarAntesMinutos}
+                                    "
                             >
                                 Editar
                             </button>
 
                             <form
-                                    method="post"
                                     th:action="@{/recordatorios/delete/{id}(id=${recordatorio.id})}"
+                                    method="post"
                             >
 
                                 <button
-                                        class="danger-btn"
                                         type="submit"
+                                        class="danger-btn"
                                 >
                                     Eliminar
                                 </button>
@@ -408,21 +407,13 @@
         id="createModal"
 >
 
-    <div class="modal modal-large">
+    <div class="modal">
 
         <div class="modal-header">
 
-            <div>
-
-                <h2>
-                    Crear recordatorio
-                </h2>
-
-                <p class="modal-subtitle">
-                    Completa la información del recordatorio
-                </p>
-
-            </div>
+            <h2>
+                Crear recordatorio
+            </h2>
 
             <button
                     class="close-btn"
@@ -434,237 +425,189 @@
         </div>
 
         <form
-                id="createForm"
-                method="post"
                 th:action="@{/recordatorios}"
+                method="post"
+                id="createForm"
         >
 
-            <div class="modal-body">
+            <div class="form-grid">
 
-                <!-- INFORMACIÓN PRINCIPAL -->
+                <div class="form-group full">
 
-                <div class="form-section">
+                    <label>
+                        Título
+                    </label>
 
-                    <h3 class="section-title">
-                        Información principal
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group full">
-
-                            <label>
-                                Título
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    name="titulo"
-                                    placeholder="Ej: Tomar medicamento"
-                                    required
-                                    type="text"
-                            >
-
-                        </div>
-
-                        <div class="form-group full">
-
-                            <label>
-                                Mensaje
-                            </label>
-
-                            <textarea
-                                    class="form-textarea"
-                                    name="mensaje"
-                                    placeholder="Describe el recordatorio..."
-                            ></textarea>
-
-                        </div>
-
-                    </div>
+                    <input
+                            type="text"
+                            name="titulo"
+                            class="form-input"
+                            required
+                    >
 
                 </div>
 
-                <!-- FECHA Y RECORDATORIO -->
+                <div class="form-group full">
 
-                <div class="form-section">
+                    <label>
+                        Mensaje
+                    </label>
 
-                    <h3 class="section-title">
-                        Fecha y aviso
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label>
-                                Fecha límite
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    name="fechaLimite"
-                                    required
-                                    type="datetime-local"
-                            >
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Recordar antes (minutos)
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    name="recordarAntesMinutos"
-                                    placeholder="0"
-                                    type="number"
-                            >
-
-                        </div>
-
-                    </div>
+                    <textarea
+                            name="mensaje"
+                            class="form-textarea"
+                    ></textarea>
 
                 </div>
 
-                <!-- CONFIGURACIÓN -->
+                <div class="form-group">
 
-                <div class="form-section">
+                    <label>
+                        Fecha límite
+                    </label>
 
-                    <h3 class="section-title">
-                        Configuración
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label>
-                                Prioridad
-                            </label>
-
-                            <select
-                                    class="form-select"
-                                    name="prioridad"
-                            >
-
-                                <option value="ALTA">
-                                    Alta
-                                </option>
-
-                                <option value="MEDIA">
-                                    Media
-                                </option>
-
-                                <option value="BAJA">
-                                    Baja
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Categoría
-                            </label>
-
-                            <select
-                                    class="form-select"
-                                    name="categoria"
-                            >
-
-                                <option value="SALUD">
-                                    Medicamento
-                                </option>
-
-                                <option value="HOGAR">
-                                    Hogar
-                                </option>
-
-                                <option value="TRABAJO">
-                                    Trabajo
-                                </option>
-
-                                <option value="ESTUDIO">
-                                    Estudio
-                                </option>
-
-                                <option value="PERSONAL">
-                                    Personal
-                                </option>
-
-                                <option value="FINANZAS">
-                                    Finanzas
-                                </option>
-
-                                <option value="OTRO">
-                                    Otro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Color
-                            </label>
-
-                            <input
-                                    class="form-input color-input"
-                                    name="color"
-                                    type="color"
-                                    value="#6366f1"
-                            >
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Intervalo días
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    name="intervaloDias"
-                                    placeholder="No aplica"
-                                    type="number"
-                            >
-
-                        </div>
-
-                    </div>
+                    <input
+                            type="datetime-local"
+                            name="fechaLimite"
+                            class="form-input"
+                            required
+                    >
 
                 </div>
 
-                <!-- OPCIONES -->
+                <div class="form-group">
 
-                <div class="form-section">
+                    <label>
+                        Recordar antes (min)
+                    </label>
 
-                    <h3 class="section-title">
-                        Opciones
-                    </h3>
+                    <input
+                            type="number"
+                            name="recordarAntesMinutos"
+                            class="form-input"
+                    >
 
-                    <div class="checkbox-group-modern">
+                </div>
 
+                <div class="form-group">
+
+                    <label>
+                        Prioridad
+                    </label>
+
+                    <select
+                            name="prioridad"
+                            class="form-select"
+                    >
+
+                        <option value="ALTA">
+                            Alta
+                        </option>
+
+                        <option value="MEDIA">
+                            Media
+                        </option>
+
+                        <option value="BAJA">
+                            Baja
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Categoría
+                    </label>
+
+                    <select
+                            name="categoria"
+                            class="form-select"
+                    >
+                        <option value="SALUD">
+                            Medicamento
+                        </option>
+
+                        <option value="HOGAR">
+                            Hogar
+                        </option>
+
+                        <option value="TRABAJO">
+                            Trabajo
+                        </option>
+
+                        <option value="ESTUDIO">
+                            Estudio
+                        </option>
+
+                        <option value="PERSONAL">
+                            Personal
+                        </option>
+
+                        <option value="FINANZAS">
+                            Finanzas
+                        </option>
+
+                        <option value="OTRO">
+                            Otro
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Color
+                    </label>
+
+                    <input
+                            type="color"
+                            name="color"
+                            value="#6366f1"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group checkbox-full">
+
+                    <div class="checkbox-group">
+
+                        <!-- Enviar explicitamente false cuando no esté marcado -->
+                        <input type="hidden" name="repetitivo" value="false">
                         <input
-                                id="repetitivoCreate"
-                                name="repetitivo"
                                 type="checkbox"
+                                name="repetitivo"
                                 value="true"
+                                id="repetitivoCreate"
                         >
 
-                        <label for="repetitivoCreate">
-                            Recordatorio repetitivo
+                        <label>
+                            Repetitivo
                         </label>
 
                     </div>
+
+                </div>
+
+                <div
+                        class="form-group"
+                        id="intervaloDiasContainer"
+                >
+
+                    <label>
+                        Intervalo días
+                    </label>
+
+                    <input
+                            type="number"
+                            name="intervaloDias"
+                            class="form-input"
+                    >
 
                 </div>
 
@@ -673,18 +616,18 @@
             <div class="modal-actions">
 
                 <button
+                        type="button"
                         class="cancel-btn"
                         onclick="attemptCloseModal('createModal')"
-                        type="button"
                 >
                     Cancelar
                 </button>
 
                 <button
-                        class="save-btn"
                         type="submit"
+                        class="save-btn"
                 >
-                    Guardar recordatorio
+                    Guardar
                 </button>
 
             </div>
@@ -702,21 +645,13 @@
         id="editModal"
 >
 
-    <div class="modal modal-large">
+    <div class="modal">
 
         <div class="modal-header">
 
-            <div>
-
-                <h2>
-                    Editar recordatorio
-                </h2>
-
-                <p class="modal-subtitle">
-                    Modifica la información del recordatorio
-                </p>
-
-            </div>
+            <h2>
+                Editar recordatorio
+            </h2>
 
             <button
                     class="close-btn"
@@ -728,253 +663,196 @@
         </div>
 
         <form
-                id="editForm"
                 method="post"
+                id="editForm"
         >
 
-            <div class="modal-body">
+            <div class="form-grid">
 
-                <!-- INFORMACIÓN PRINCIPAL -->
+                <div class="form-group full">
 
-                <div class="form-section">
+                    <label>
+                        Título
+                    </label>
 
-                    <h3 class="section-title">
-                        Información principal
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group full">
-
-                            <label>
-                                Título
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    id="editTitulo"
-                                    name="titulo"
-                                    required
-                                    type="text"
-                            >
-
-                        </div>
-
-                        <div class="form-group full">
-
-                            <label>
-                                Mensaje
-                            </label>
-
-                            <textarea
-                                    class="form-textarea"
-                                    id="editMensaje"
-                                    name="mensaje"
-                            ></textarea>
-
-                        </div>
-
-                    </div>
+                    <input
+                            type="text"
+                            id="editTitulo"
+                            name="titulo"
+                            class="form-input"
+                            required
+                    >
 
                 </div>
 
-                <!-- FECHA Y AVISO -->
+                <div class="form-group full">
 
-                <div class="form-section">
+                    <label>
+                        Mensaje
+                    </label>
 
-                    <h3 class="section-title">
-                        Fecha y aviso
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label>
-                                Fecha límite
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    id="editFechaLimite"
-                                    name="fechaLimite"
-                                    required
-                                    type="datetime-local"
-                            >
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Recordar antes (minutos)
-                            </label>
-
-                            <input
-                                    class="form-input"
-                                    id="editRecordarAntes"
-                                    name="recordarAntesMinutos"
-                                    placeholder="0"
-                                    type="number"
-                            >
-
-                        </div>
-
-                    </div>
+                    <textarea
+                            id="editMensaje"
+                            name="mensaje"
+                            class="form-textarea"
+                    ></textarea>
 
                 </div>
 
-                <!-- CONFIGURACIÓN -->
+                <div class="form-group">
 
-                <div class="form-section">
+                    <label>
+                        Fecha límite
+                    </label>
 
-                    <h3 class="section-title">
-                        Configuración
-                    </h3>
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label>
-                                Prioridad
-                            </label>
-
-                            <select
-                                    class="form-select"
-                                    id="editPrioridad"
-                                    name="prioridad"
-                            >
-
-                                <option value="ALTA">
-                                    Alta
-                                </option>
-
-                                <option value="MEDIA">
-                                    Media
-                                </option>
-
-                                <option value="BAJA">
-                                    Baja
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Categoría
-                            </label>
-
-                            <select
-                                    class="form-select"
-                                    id="editCategoria"
-                                    name="categoria"
-                            >
-
-                                <option value="SALUD">
-                                    Medicamento
-                                </option>
-
-                                <option value="HOGAR">
-                                    Hogar
-                                </option>
-
-                                <option value="TRABAJO">
-                                    Trabajo
-                                </option>
-
-                                <option value="ESTUDIO">
-                                    Estudio
-                                </option>
-
-                                <option value="PERSONAL">
-                                    Personal
-                                </option>
-
-                                <option value="FINANZAS">
-                                    Finanzas
-                                </option>
-
-                                <option value="OTRO">
-                                    Otro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Color
-                            </label>
-
-                            <input
-                                    class="form-input color-input"
-                                    id="editColor"
-                                    name="color"
-                                    type="color"
-                            >
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label>
-                                Tipo repetición
-                            </label>
-
-                            <select
-                                    class="form-select"
-                                    id="editTipoRepeticion"
-                                    name="tipoRepeticion"
-                            >
-
-                                <option value="DIARIO">
-                                    Diario
-                                </option>
-
-                                <option value="SEMANAL">
-                                    Semanal
-                                </option>
-
-                                <option value="MENSUAL">
-                                    Mensual
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
+                    <input
+                            type="datetime-local"
+                            id="editFechaLimite"
+                            name="fechaLimite"
+                            class="form-input"
+                            required
+                    >
 
                 </div>
 
-                <!-- OPCIONES -->
+                <div class="form-group">
 
-                <div class="form-section">
+                    <label>
+                        Recordar antes (min)
+                    </label>
 
-                    <h3 class="section-title">
-                        Opciones
-                    </h3>
+                    <input
+                            type="number"
+                            id="editRecordarAntes"
+                            name="recordarAntesMinutos"
+                            class="form-input"
+                    >
 
-                    <div class="checkbox-group-modern">
+                </div>
 
+                <div class="form-group">
+
+                    <label>
+                        Prioridad
+                    </label>
+
+                    <select
+                            id="editPrioridad"
+                            name="prioridad"
+                            class="form-select"
+                    >
+
+                        <option value="ALTA">
+                            Alta
+                        </option>
+
+                        <option value="MEDIA">
+                            Media
+                        </option>
+
+                        <option value="BAJA">
+                            Baja
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Categoría
+                    </label>
+
+                    <select
+                            id="editCategoria"
+                            name="categoria"
+                            class="form-select"
+                    >
+
+                        <option value="SALUD">
+                            Medicamento
+                        </option>
+
+                        <option value="HOGAR">
+                            Hogar
+                        </option>
+
+                        <option value="TRABAJO">
+                            Trabajo
+                        </option>
+
+                        <option value="ESTUDIO">
+                            Estudio
+                        </option>
+
+                        <option value="PERSONAL">
+                            Personal
+                        </option>
+
+                        <option value="FINANZAS">
+                            Finanzas
+                        </option>
+
+                        <option value="OTRO">
+                            Otro
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Color
+                    </label>
+
+                    <input
+                            type="color"
+                            id="editColor"
+                            name="color"
+                            class="form-input"
+                    >
+
+                </div>
+
+                <div class="form-group checkbox-full">
+
+                    <div class="checkbox-group">
+
+                        <!-- Enviar explicitamente false cuando no esté marcado -->
+                        <input type="hidden" name="repetitivo" value="false">
                         <input
+                                type="checkbox"
                                 id="editRepetitivo"
                                 name="repetitivo"
-                                type="checkbox"
                                 value="true"
                         >
 
-                        <label for="editRepetitivo">
-                            Recordatorio repetitivo
+                        <label>
+                            Repetitivo
                         </label>
 
                     </div>
+
+                </div>
+
+                <div
+                        class="form-group hidden"
+                        id="editIntervaloDiasContainer"
+                >
+
+                    <label>
+                        Intervalo días
+                    </label>
+
+                    <input
+                            type="number"
+                            id="editIntervaloDias"
+                            name="intervaloDias"
+                            class="form-input"
+                    >
 
                 </div>
 
@@ -983,16 +861,16 @@
             <div class="modal-actions">
 
                 <button
+                        type="button"
                         class="cancel-btn"
                         onclick="attemptCloseModal('editModal')"
-                        type="button"
                 >
                     Cancelar
                 </button>
 
                 <button
-                        class="save-btn"
                         type="submit"
+                        class="save-btn"
                 >
                     Guardar cambios
                 </button>

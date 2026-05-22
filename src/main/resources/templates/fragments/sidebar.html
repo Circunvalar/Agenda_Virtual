@@ -39,6 +39,14 @@
         </a>
 
         <a
+                th:href="@{/calendario}"
+                class="nav-item"
+                th:classappend="${activePage == 'calendario'} ? ' nav-active'"
+        >
+            🗓️ Calendario
+        </a>
+
+        <a
                 th:href="@{/contactos}"
                 class="nav-item"
                 th:classappend="${activePage == 'contactos'} ? ' nav-active'"
@@ -52,6 +60,14 @@
                 th:classappend="${activePage == 'recordatorios'} ? ' nav-active'"
         >
             🔔 Recordatorios
+        </a>
+
+        <a
+                th:href="@{/ia}"
+                class="nav-item"
+                th:classappend="${activePage == 'ia'} ? ' nav-active'"
+        >
+            🤖 Asistente IA
         </a>
 
     </nav>

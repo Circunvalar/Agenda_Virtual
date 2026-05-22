@@ -60,15 +60,17 @@
 
         <div class="input-group">
 
-            <label class="input-label">
+            <label for="nombre" class="input-label">
                 Nombre completo
             </label>
 
             <input
+                    id="nombre"
                     type="text"
                     name="nombre"
                     placeholder="Tu nombre completo"
                     class="input-style"
+                    minlength="3"
                     required
             >
 
@@ -76,11 +78,12 @@
 
         <div class="input-group">
 
-            <label class="input-label">
+            <label for="email" class="input-label">
                 Correo electrónico
             </label>
 
             <input
+                    id="email"
                     type="email"
                     name="email"
                     placeholder="correo@ejemplo.com"
@@ -92,15 +95,21 @@
 
         <div class="input-group">
 
-            <label class="input-label">
+            <label for="telefono" class="input-label">
                 Número telefónico
             </label>
 
             <input
+                    id="telefono"
                     type="tel"
                     name="telefono"
                     placeholder="3001234567"
                     class="input-style"
+                    inputmode="numeric"
+                    pattern="\d{10}"
+                    maxlength="10"
+                    minlength="10"
+                    title="Número celular colombiano (10 dígitos, solo números)"
                     required
             >
 
@@ -108,15 +117,17 @@
 
         <div class="input-group">
 
-            <label class="input-label">
+            <label for="username" class="input-label">
                 Usuario
             </label>
 
             <input
+                    id="username"
                     type="text"
                     name="username"
                     placeholder="Nombre de usuario"
                     class="input-style"
+                    minlength="3"
                     required
             >
 
@@ -124,21 +135,55 @@
 
         <div class="input-group">
 
-            <label class="input-label">
+            <label for="password" class="input-label">
                 Contraseña
             </label>
 
             <input
+                    id="password"
                     type="password"
                     name="password"
                     placeholder="Crea una contraseña"
                     class="input-style"
+                    minlength="8"
+                    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}"
+                    title="La contraseña debe tener al menos 8 caracteres, incluyendo mayúscula, minúscula, número y un caracter especial."
+                    required
+            >
+
+            <button type="button" id="togglePassword" aria-label="Mostrar contraseña" style="margin-top:10px;display:inline-block;padding:8px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:var(--text-muted);cursor:pointer;">Mostrar</button>
+
+            <div id="passwordHelp" class="input-help" aria-live="polite">
+                <small>
+                    Requisitos: mínimo 8 caracteres, al menos una letra mayúscula, una minúscula, un número y un carácter especial.
+                </small>
+                <div style="height:6px;margin-top:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+                    <div id="passwordStrength" style="height:6px;width:0%;background:#e11d48;transition:width .2s ease;"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="input-group">
+
+            <label for="passwordConfirm" class="input-label">Repetir contraseña</label>
+
+            <input
+                    id="passwordConfirm"
+                    type="password"
+                    name="passwordConfirm"
+                    placeholder="Reescribe la contraseña"
+                    class="input-style"
+                    minlength="8"
                     required
             >
 
         </div>
 
+        <div id="formErrors" style="display:none;color:#fecaca;margin-bottom:8px;font-size:0.95rem;"></div>
+
         <button
+                id="submitBtn"
                 type="submit"
                 class="submit-btn"
         >
@@ -160,6 +205,7 @@
 </div>
 
 <script th:src="@{/js/auth/auth.js}"></script>
+<script th:src="@{/js/auth/register-validate.js}"></script>
 
 </body>
 </html>

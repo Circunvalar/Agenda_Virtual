@@ -1,6 +1,10 @@
 let createChanged = false;
 let editChanged = false;
 
+/* =========================
+   ELEMENTOS
+========================= */
+
 const createModal =
     document.getElementById('createModal');
 
@@ -13,124 +17,268 @@ const createForm =
 const editForm =
     document.getElementById('editForm');
 
+const openCreateModalBtn =
+    document.getElementById('openCreateModalBtn');
+
 /* =========================
    MODALES
 ========================= */
 
-function openCreateModal() {
+function openCreateModal(){
+
+    resetCreateForm();
 
     createModal.style.display = 'flex';
 
 }
 
-function openEditModal(button) {
+function openEditModal(button){
+
+    resetEditForm();
 
     editModal.style.display = 'flex';
 
-    const id =
-        button.dataset.id;
+    // Datos desde dataset del botón; si faltan, hacemos fallback al DOM
+    const data = (button && button.dataset) ? button.dataset : {};
 
-    editForm.action =
-        `/recordatorios/update/${id}`;
+    // Encuentra la tarjeta (card) más cercana para extraer info si dataset incompleto
+    const card = (button && button.closest)
+        ? button.closest('.recordatorio-card')
+        : null;
 
-    document.getElementById(
-        'editTitulo'
-    ).value =
-        button.dataset.titulo || '';
+    // id (desde dataset o atributo data-id), usado para construir la acción del form
+    const id = data.id || (button.getAttribute && button.getAttribute('data-id')) || (card && card.dataset && card.dataset.id);
 
-    document.getElementById(
-        'editMensaje'
-    ).value =
-        button.dataset.mensaje || '';
-
-    const fecha =
-        button.dataset.fecha;
-
-    if (fecha) {
-
-        document.getElementById(
-            'editFechaLimite'
-        ).value =
-            fecha.substring(0, 16);
-
+    if(id){
+        editForm.action = `/recordatorios/update/${id}`;
     }
 
-    document.getElementById(
-        'editPrioridad'
-    ).value =
-        button.dataset.prioridad || 'MEDIA';
+    const getTextFromCard = (selector) => {
+        if(!card || !selector) return '';
+        const el = card.querySelector(selector);
+        return el ? el.textContent.trim() : '';
+    };
 
-    document.getElementById(
-        'editCategoria'
-    ).value =
-        button.dataset.categoria || 'OTRO';
+    // Título y mensaje
+    const titulo = data.titulo || getTextFromCard('.recordatorio-title-group h3') || getTextFromCard('.recordatorio-title h3');
+    const mensaje = data.mensaje || getTextFromCard('.recordatorio-title-group p') || getTextFromCard('.recordatorio-title p');
 
-    document.getElementById(
-        'editColor'
-    ).value =
-        button.dataset.color || '#6366f1';
+    setValue('editTitulo', titulo);
+    setValue('editMensaje', mensaje);
 
-    document.getElementById(
-        'editRecordarAntes'
-    ).value =
-        button.dataset.recordarantes || '';
+    // Fecha límite: preferimos dataset, si no está intentamos parsear el texto mostrado
+    let fechaVal = data.fecha || data.fechaLimite || '';
+    if(!fechaVal && card){
+        const dateEl = card.querySelector('.recordatorio-info span');
+        if(dateEl){
+            const txt = dateEl.textContent || '';
+            const m = txt.match(/(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2})/);
+            if(m){
+                const d = m[1]; // dd/MM/yyyy HH:mm
+                const parts = d.split(' ');
+                const dateParts = parts[0].split('/');
+                const timePart = parts[1];
+                fechaVal = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T${timePart}`;
+            }
+        }
+    }
 
-    document.getElementById(
-        'editIntervaloDias'
-    ).value =
-        button.dataset.intervalodias || '';
+    setValue('editFechaLimite', formatDateTimeLocal(fechaVal));
 
-    document.getElementById(
-        'editTipoRepeticion'
-    ).value =
-        button.dataset.tiporepeticion || 'DIARIO';
+    // Recordar antes
+    let recordar = data.recordarantes || data.recordar || '';
+    if(!recordar && card){
+        const spans = card.querySelectorAll('.recordatorio-info span');
+        if(spans && spans.length > 1){
+            const rtxt = spans[1].textContent || '';
+            const num = rtxt.match(/(\d+)/);
+            if(num) recordar = num[1];
+        }
+    }
 
-    const repetitivo =
-        button.dataset.repetitivo === 'true';
+    setValue('editRecordarAntes', recordar || 30);
 
-    document.getElementById(
-        'editRepetitivo'
-    ).checked =
-        repetitivo;
+    // Prioridad y categoría (dataset o badges)
+    const prioridad = data.prioridad || (card && (card.querySelector('.badge.prioridad') || card.querySelector('.badge-priority')) && (card.querySelector('.badge.prioridad') || card.querySelector('.badge-priority')).textContent.trim()) || 'MEDIA';
+    const categoria = data.categoria || (card && (card.querySelector('.badge.categoria') || card.querySelector('.badge-category')) && (card.querySelector('.badge.categoria') || card.querySelector('.badge-category')).textContent.trim()) || 'OTRO';
+
+    setValue('editPrioridad', prioridad);
+    setValue('editCategoria', categoria);
+
+    // Color
+    let colorVal = data.color || '';
+    if(!colorVal && card){
+        const colorEl = card.querySelector('.recordatorio-color');
+        if(colorEl){
+            const bg = colorEl.style.background || getComputedStyle(colorEl).backgroundColor || '';
+            colorVal = bg;
+        }
+    }
+    setValue('editColor', colorVal || '#6366f1');
+
+    // Intervalo días
+    setValue('editIntervaloDias', data.intervalodias || data.intervalo || '');
+
+    // Repetitivo: dataset o existencia de la badge
+    const rep = (data.repetitivo !== undefined) ? data.repetitivo : (card && !!card.querySelector('.badge.repetitivo'));
+    const editRepetitivoCheckbox = document.getElementById('editRepetitivo');
+    if(editRepetitivoCheckbox){
+        editRepetitivoCheckbox.checked = (rep === 'true' || rep === true || rep === '1' || rep === 1);
+        toggleRepeatFields('edit', editRepetitivoCheckbox.checked);
+    }
 
 }
 
-/* =========================
-   CERRAR MODAL
-========================= */
+function closeModal(modal){
 
-function closeModal(modalId) {
-
-    document.getElementById(
-        modalId
-    ).style.display = 'none';
+    modal.style.display = 'none';
 
 }
 
-/* =========================
-   CONFIRMAR CIERRE
-========================= */
+function attemptCloseModal(target){
 
-function attemptCloseModal(modalId) {
+    const normalized =
+        target === 'createModal' || target === 'create'
+            ? 'create'
+            : 'edit';
 
     const changed =
-        modalId === 'createModal'
+        normalized === 'create'
             ? createChanged
             : editChanged;
 
-    if (changed) {
+    if(changed){
 
         const confirmClose = confirm(
             'Tienes cambios sin guardar. ¿Deseas salir?'
         );
 
-        if (!confirmClose) {
+        if(!confirmClose){
             return;
         }
 
     }
 
-    closeModal(modalId);
+    if(normalized === 'create'){
+
+        closeModal(createModal);
+
+    }else{
+
+        closeModal(editModal);
+
+    }
+
+}
+
+function closeFromButton(button){
+
+    const targetId = button.dataset.close;
+
+    if(targetId === 'createModal'){
+
+        attemptCloseModal('create');
+
+        return;
+
+    }
+
+    if(targetId === 'editModal'){
+
+        attemptCloseModal('edit');
+
+        return;
+
+    }
+
+    const modal = document.getElementById(targetId);
+
+    if(modal){
+
+        closeModal(modal);
+
+    }
+
+}
+
+function bindEditButtons(){
+
+    const editButtons =
+        document.querySelectorAll(
+            '.recordatorio-actions button[data-id]'
+        );
+
+    editButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            () => openEditModal(button)
+        );
+
+    });
+
+}
+
+/* =========================
+   HELPERS
+========================= */
+
+function setValue(id, value){
+
+    const element =
+        document.getElementById(id);
+
+    if(element){
+
+        element.value = value || '';
+
+    }
+
+}
+
+function formatDateTimeLocal(dateString){
+
+    if(!dateString){
+        return '';
+    }
+
+    try{
+
+        return dateString.substring(0,16);
+
+    }catch(e){
+
+        return '';
+
+    }
+
+}
+
+/* =========================
+   RESET FORMS
+========================= */
+
+function resetCreateForm(){
+
+    if(createForm){
+
+        createForm.reset();
+
+        createChanged = false;
+
+    }
+
+}
+
+function resetEditForm(){
+
+    if(editForm){
+
+        editForm.reset();
+
+        editChanged = false;
+
+    }
 
 }
 
@@ -138,53 +286,43 @@ function attemptCloseModal(modalId) {
    TRACK CHANGES
 ========================= */
 
-if (createForm) {
+if(createForm){
 
     createForm.addEventListener(
         'input',
         () => createChanged = true
     );
 
-    createForm.addEventListener(
-        'submit',
-        () => createChanged = false
-    );
-
 }
 
-if (editForm) {
+if(editForm){
 
     editForm.addEventListener(
         'input',
         () => editChanged = true
     );
 
-    editForm.addEventListener(
-        'submit',
-        () => editChanged = false
-    );
-
 }
 
 /* =========================
-   CERRAR POR FUERA
+   CERRAR FUERA
 ========================= */
 
-window.onclick = function (event) {
+window.addEventListener('click', event => {
 
-    if (event.target === createModal) {
+    if(event.target === createModal){
 
         attemptCloseModal('createModal');
 
     }
 
-    if (event.target === editModal) {
+    if(event.target === editModal){
 
         attemptCloseModal('editModal');
 
     }
 
-};
+});
 
 /* =========================
    FILTROS
@@ -199,7 +337,7 @@ const priorityFilter =
 const categoryFilter =
     document.getElementById('categoryFilter');
 
-function filterCards() {
+function filterCards(){
 
     const cards =
         document.querySelectorAll(
@@ -231,25 +369,18 @@ function filterCards() {
             !category ||
             card.dataset.categoria === category;
 
-        if (
+        card.style.display =
             matchesSearch &&
             matchesPriority &&
             matchesCategory
-        ) {
-
-            card.style.display = 'flex';
-
-        } else {
-
-            card.style.display = 'none';
-
-        }
+                ? 'block'
+                : 'none';
 
     });
 
 }
 
-if (searchInput) {
+if(searchInput){
 
     searchInput.addEventListener(
         'input',
@@ -258,7 +389,7 @@ if (searchInput) {
 
 }
 
-if (priorityFilter) {
+if(priorityFilter){
 
     priorityFilter.addEventListener(
         'change',
@@ -267,7 +398,7 @@ if (priorityFilter) {
 
 }
 
-if (categoryFilter) {
+if(categoryFilter){
 
     categoryFilter.addEventListener(
         'change',
@@ -275,3 +406,136 @@ if (categoryFilter) {
     );
 
 }
+
+/* =========================
+   REPETICIÓN
+========================= */
+
+const createRepetitivo =
+    document.getElementById('repetitivoCreate');
+
+const editRepetitivo =
+    document.getElementById('editRepetitivo');
+
+function toggleRepeatFields(prefix, checked){
+
+    const sectionId =
+        prefix === 'create'
+            ? 'intervaloDiasContainer'
+            : 'editIntervaloDiasContainer';
+
+    const section =
+        document.getElementById(sectionId);
+
+    if(section){
+
+        section.style.display =
+            checked
+                ? 'block'
+                : 'none';
+
+    }
+
+}
+
+if(createRepetitivo){
+
+    createRepetitivo.addEventListener(
+        'change',
+        e => {
+
+            toggleRepeatFields(
+                'create',
+                e.target.checked
+            );
+
+        }
+    );
+
+}
+
+if(editRepetitivo){
+
+    editRepetitivo.addEventListener(
+        'change',
+        e => {
+
+            toggleRepeatFields(
+                'edit',
+                e.target.checked
+            );
+
+        }
+    );
+
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    if(openCreateModalBtn){
+
+        openCreateModalBtn.addEventListener(
+            'click',
+            openCreateModal
+        );
+
+    }
+
+    const closeButtons =
+        document.querySelectorAll('[data-close]');
+
+    closeButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            () => closeFromButton(button)
+        );
+
+    });
+
+    bindEditButtons();
+
+});
+
+// Event delegation: si por alguna razón los botones se renderizan
+// dinámicamente después, capturamos clicks en documento y
+// abrimos el modal cuando el objetivo sea un `.edit-btn`.
+document.addEventListener('click', event => {
+
+    const btn = event.target.closest &&
+        event.target.closest('.recordatorio-actions button[data-id]');
+
+    if(btn){
+
+        // Evita que algún otro manejador evite la acción
+        event.preventDefault();
+
+        // Debug opcional (queda en consola del navegador)
+        try{
+            console.debug('Edit button clicked, id=', btn.dataset.id);
+        }catch(e){/* ignore */}
+
+        openEditModal(btn);
+
+    }
+
+});
+
+// Cerrar modal con ESC
+window.addEventListener('keydown', e => {
+
+    if(e.key === 'Escape'){
+
+        if(createModal && createModal.style.display === 'flex'){
+            attemptCloseModal('createModal');
+            return;
+        }
+
+        if(editModal && editModal.style.display === 'flex'){
+            attemptCloseModal('editModal');
+        }
+
+    }
+
+});
+

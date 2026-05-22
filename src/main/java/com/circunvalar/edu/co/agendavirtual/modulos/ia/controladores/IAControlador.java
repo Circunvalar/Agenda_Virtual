@@ -125,4 +125,13 @@ public class IAControlador {
                 tareas
         );
     }
+
+    @GetMapping("/diagnostico")
+    public ResponseEntity<?> diagnosticoProveedor(){
+
+        return ResponseEntity.ok(
+                iaService.diagnosticarProveedor()
+        );
+
+    }
 }
