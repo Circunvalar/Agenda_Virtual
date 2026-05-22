@@ -22,7 +22,7 @@ Aplicación web construida con Spring Boot para gestionar agenda personal: event
 
 ## Estructura del proyecto
 
-- `src/main/java/.../modulos/` lógica por dominios (`autentificacion`, `dashboard`, `eventos`, `recordatorios`, `contactos`, `calendario`, `tareas`, `ia`).
+- `src/main/java/.../modulos/` lógica por dominios (`autentificacion` para autenticación, `dashboard`, `eventos`, `recordatorios`, `contactos`, `calendario`, `tareas`, `ia`).
 - `src/main/resources/templates/` vistas Thymeleaf.
 - `src/main/resources/static/` recursos frontend (CSS y JS).
 - `docker/postgres/init.sql` scripts de inicialización de base de datos.
