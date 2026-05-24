@@ -5,11 +5,16 @@ import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador para registro de usuarios.
+ */
 @Controller
 @RequiredArgsConstructor
 public class AutenticacionControlador {
@@ -18,6 +23,9 @@ public class AutenticacionControlador {
 
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Registra un usuario nuevo si no hay conflictos por username, email o telefono.
+     */
     @PostMapping("/register")
     public String registerUser(
             @ModelAttribute RegisterRequest request

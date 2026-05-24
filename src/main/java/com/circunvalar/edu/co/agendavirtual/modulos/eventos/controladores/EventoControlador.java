@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Controlador MVC para CRUD de eventos.
+ */
 @Controller
 @RequestMapping("/eventos")
 @RequiredArgsConstructor
@@ -22,6 +25,9 @@ public class EventoControlador {
 
     private final ContactosServicio contactosServicio;
 
+    /**
+     * Lista eventos del usuario y carga contactos para invitados.
+     */
     @GetMapping
     public String listarEventos(
             Authentication authentication,
@@ -50,6 +56,9 @@ public class EventoControlador {
         return "dashboard/eventos";
     }
 
+    /**
+     * Crea un evento y redirige al listado.
+     */
     @PostMapping
     public String crearEvento(
             @ModelAttribute EventoRequestDTO dto,
@@ -64,6 +73,9 @@ public class EventoControlador {
         return "redirect:/eventos";
     }
 
+    /**
+     * Elimina un evento del usuario.
+     */
     @PostMapping("/delete/{id}")
     public String eliminarEvento(
             @PathVariable String id,
@@ -78,6 +90,9 @@ public class EventoControlador {
         return "redirect:/eventos";
     }
 
+    /**
+     * Actualiza datos e invitados de un evento.
+     */
     @PostMapping("/update/{id}")
     public String actualizarEvento(
             @PathVariable UUID id,

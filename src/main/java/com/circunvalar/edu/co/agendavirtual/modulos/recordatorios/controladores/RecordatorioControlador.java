@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * Controlador MVC para CRUD de recordatorios.
+ */
 @Controller
 @RequestMapping("/recordatorios")
 @RequiredArgsConstructor
@@ -20,8 +23,8 @@ public class RecordatorioControlador {
 
     private final ContactosServicio contactosServicio;
 
-    /*
-        LISTAR
+    /**
+     * Lista recordatorios y carga datos auxiliares para la vista.
      */
     @GetMapping
     public String listarRecordatorios(
@@ -52,8 +55,8 @@ public class RecordatorioControlador {
         return "dashboard/recordatorios";
     }
 
-    /*
-        CREAR
+    /**
+     * Crea un recordatorio y redirige al listado.
      */
     @PostMapping
     public String crearRecordatorio(
@@ -69,8 +72,8 @@ public class RecordatorioControlador {
         return "redirect:/recordatorios";
     }
 
-    /*
-        ACTUALIZAR
+    /**
+     * Actualiza un recordatorio existente.
      */
     @PostMapping("/update/{id}")
     public String actualizarRecordatorio(
@@ -88,8 +91,8 @@ public class RecordatorioControlador {
         return "redirect:/recordatorios";
     }
 
-    /*
-        COMPLETAR
+    /**
+     * Marca el recordatorio como completado.
      */
     @PostMapping("/complete/{id}")
     public String completarRecordatorio(
@@ -105,8 +108,8 @@ public class RecordatorioControlador {
         return "redirect:/recordatorios";
     }
 
-    /*
-        ELIMINAR LOGICO
+    /**
+     * Archiva el recordatorio (eliminacion logica).
      */
     @PostMapping("/delete/{id}")
     public String eliminarRecordatorio(

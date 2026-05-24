@@ -10,6 +10,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.UUID;
 
+/**
+ * Controlador MVC para gestionar contactos del usuario.
+ */
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/contactos")
@@ -17,6 +20,9 @@ public class ContactosControlador {
 
     private final ContactosServicio contactoServicio;
 
+    /**
+     * Renderiza la vista de contactos.
+     */
     @GetMapping
     public String contactos(
             Model model,
@@ -33,6 +39,9 @@ public class ContactosControlador {
         return "dashboard/contactos";
     }
 
+    /**
+     * Agrega un contacto y muestra un mensaje flash.
+     */
     @PostMapping("/agregar")
     public String agregarContacto(
             @RequestParam String telefono,
@@ -53,6 +62,9 @@ public class ContactosControlador {
         return "redirect:/contactos";
     }
 
+    /**
+     * Elimina un contacto del usuario.
+     */
     @PostMapping("/eliminar/{contactoId}")
     public String eliminarContacto(
             @PathVariable UUID contactoId,

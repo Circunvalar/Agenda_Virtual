@@ -45,6 +45,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Servicio central de IA: prompts, parsing, chat con memoria y tareas por lenguaje natural.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -81,6 +84,9 @@ public class IAService {
     @Value("${ai.enabled:true}")
     private boolean aiEnabled;
 
+    /**
+     * Convierte un mensaje en un recordatorio estructurado usando IA.
+     */
     public IAResponseDTO procesarMensaje(
             String mensajeUsuario
     ) {
@@ -273,6 +279,9 @@ public class IAService {
 
     }
 
+    /**
+     * Genera una lista JSON de tareas para organizar el dia del usuario.
+     */
     public String organizarDia(
             String mensajeUsuario
     ) {
@@ -359,6 +368,9 @@ public class IAService {
         );
     }
 
+    /**
+     * Analiza texto y devuelve un JSON con atributos de una tarea.
+     */
     public String analizarTareas(String mensajeUsuario) {
 
         if(!aiEnabled){
@@ -412,6 +424,9 @@ public class IAService {
         return Objects.toString(response.get("response"), "");
     }
 
+    /**
+     * Interpreta texto en una lista de recordatorios sugeridos.
+     */
     public List<IARecordatorioDTO> interpretarTareas(
             String mensaje
     ) {
@@ -582,6 +597,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Convierte recordatorios sugeridos por IA en DTOs de entrada del sistema.
+     */
     public List<RecordatorioRequestDTO> convertirARecordatorios(
             List<IARecordatorioDTO> tareasIA
     ) {
@@ -840,6 +858,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Verifica conectividad con el proveedor de IA.
+     */
     public Map<String, Object> diagnosticarOllama() {
 
         Map<String, Object> resultado = new HashMap<>();
@@ -873,6 +894,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Chat con memoria contextual del usuario.
+     */
     public IAChatResponseDTO chatConMemoria(
             IAChatRequestDTO request,
             String username
@@ -909,6 +933,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Genera un plan diario basado en contexto y preferencias.
+     */
     public IAChatResponseDTO generarPlanDiario(
             IAChatRequestDTO request,
             String username
@@ -922,6 +949,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Genera un plan semanal basado en contexto y preferencias.
+     */
     public IAChatResponseDTO generarPlanSemanal(
             IAChatRequestDTO request,
             String username
@@ -935,6 +965,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Prioriza tareas existentes segun contexto del usuario.
+     */
     public IAChatResponseDTO priorizarTareas(
             IAChatRequestDTO request,
             String username
@@ -985,6 +1018,9 @@ MENSAJE USUARIO:
 
     }
 
+    /**
+     * Ejecuta operaciones sobre tareas a partir de lenguaje natural.
+     */
     public IATareaOperacionResultadoDTO procesarTareasNL(
             IAChatRequestDTO request,
             String username

@@ -15,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Logica de negocio para crear, actualizar y consultar eventos.
+ */
 @Service
 @RequiredArgsConstructor
 public class EventoServicio {
@@ -23,6 +26,9 @@ public class EventoServicio {
 
     private final UsuarioRepositorio usuarioRepositorio;
 
+    /**
+     * Crea un evento para el usuario autenticado.
+     */
     public Evento crearEvento(
             EventoRequestDTO dto,
             String username
@@ -73,6 +79,9 @@ public class EventoServicio {
         return eventoRepositorio.save(evento);
     }
 
+    /**
+     * Obtiene los eventos asociados al usuario.
+     */
     public List<Evento> obtenerEventosUsuario(
             String username
     ) {
@@ -84,6 +93,9 @@ public class EventoServicio {
         return eventoRepositorio.findByCreador(usuario);
     }
 
+    /**
+     * Elimina un evento si el usuario es el propietario.
+     */
     public void eliminarEvento(
             String id,
             String username
@@ -111,37 +123,9 @@ public class EventoServicio {
         eventoRepositorio.delete(evento);
     }
 
-    public List<EventoResponseDTO> obtenerEventosDelUsuario(
-            UUID usuarioId
-    ) {
-
-        List<Evento> eventos =
-                eventoRepositorio.findByCreador(usuarioId);
-
-        return eventos.stream()
-                .map(this::convertirAResponseDTO)
-                .toList();
-    }
-
-    private EventoResponseDTO convertirAResponseDTO(
-            Evento evento
-    ) {
-
-        return EventoResponseDTO.builder()
-                .id(evento.getId())
-                .titulo(evento.getTitulo())
-                .descripcion(evento.getDescripcion())
-                .fechaInicio(evento.getFechaInicio())
-                .fechaFin(evento.getFechaFin())
-                .todoElDia(evento.getTodoElDia())
-                .horaInicio(evento.getHoraInicio())
-                .horaFin(evento.getHoraFin())
-                .ubicacion(evento.getUbicacion())
-                .color(evento.getColor())
-                .estado(evento.getEstado())
-                .build();
-    }
-
+    /**
+     * Actualiza los datos y la lista de invitados de un evento.
+     */
     public void actualizarEvento(
             UUID id,
             Evento eventoActualizado,
@@ -204,6 +188,9 @@ public class EventoServicio {
 
         eventoRepositorio.save(evento);
     }
+    /**
+     * Retorna una lista de DTOs para mostrar en UI o calendario.
+     */
     public List<EventoResponseDTO> obtenerEventosDTOUsuario(
             String username
     ) {

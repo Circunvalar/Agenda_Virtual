@@ -12,6 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuracion de autenticacion, autorizacion y login por formulario.
+ */
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -19,6 +22,9 @@ public class ConfiguracionSeguridad {
 
     private final CustomUserDetailsService customUserDetailsService;
 
+    /**
+     * Define reglas de acceso y flujo de login/logout.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
@@ -97,12 +103,18 @@ public class ConfiguracionSeguridad {
         return http.build();
     }
 
+    /**
+     * Encoder de contrasenas con BCrypt.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
 
         return new BCryptPasswordEncoder(12);
     }
 
+    /**
+     * Expone el AuthenticationManager configurado por Spring Security.
+     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration

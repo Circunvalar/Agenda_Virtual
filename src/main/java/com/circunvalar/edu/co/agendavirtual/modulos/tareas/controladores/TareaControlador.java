@@ -8,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador MVC para operaciones basicas de tareas.
+ */
 @Controller
 @RequestMapping("/tareas")
 @RequiredArgsConstructor
@@ -15,6 +18,9 @@ public class TareaControlador {
 
     private final TareaServicio tareaServicio;
 
+    /**
+     * Lista tareas del usuario.
+     */
     @GetMapping
     public String listarTareas(
             Authentication authentication,
@@ -31,6 +37,9 @@ public class TareaControlador {
         return "tareas";
     }
 
+    /**
+     * Crea una nueva tarea.
+     */
     @PostMapping
     public String crearTarea(
             @ModelAttribute TareaRequestDTO dto,
@@ -45,6 +54,9 @@ public class TareaControlador {
         return "redirect:/tareas";
     }
 
+    /**
+     * Marca una tarea como completada.
+     */
     @PostMapping("/complete/{id}")
     public String completarTarea(
             @PathVariable String id,
@@ -59,6 +71,9 @@ public class TareaControlador {
         return "redirect:/tareas";
     }
 
+    /**
+     * Elimina una tarea del usuario.
+     */
     @PostMapping("/delete/{id}")
     public String eliminarTarea(
             @PathVariable String id,

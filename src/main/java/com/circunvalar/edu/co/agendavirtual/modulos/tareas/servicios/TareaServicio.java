@@ -1,7 +1,6 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.tareas.servicios;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.tareas.dtos.TareaRequestDTO;
-import com.circunvalar.edu.co.agendavirtual.modulos.tareas.dtos.TareaResponseDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.tareas.entidades.Tarea;
 import com.circunvalar.edu.co.agendavirtual.modulos.tareas.repositorios.TareaRepositorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
@@ -10,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
+/**
+ * Logica de negocio para tareas del usuario.
+ */
 @Service
 @RequiredArgsConstructor
 public class TareaServicio {
@@ -20,6 +21,9 @@ public class TareaServicio {
 
     private final UsuarioRepositorio usuarioRepositorio;
 
+    /**
+     * Crea una tarea y la asocia al usuario autenticado.
+     */
     public Tarea crearTarea(
             TareaRequestDTO dto,
             String username
@@ -45,6 +49,9 @@ public class TareaServicio {
         return tareaRepositorio.save(tarea);
     }
 
+    /**
+     * Lista las tareas del usuario.
+     */
     public List<Tarea> obtenerTareasUsuario(
             String username
     ) {
@@ -56,6 +63,9 @@ public class TareaServicio {
         return tareaRepositorio.findByCreador(usuario);
     }
 
+    /**
+     * Marca una tarea como completada si el usuario es el propietario.
+     */
     public void completarTarea(
             String id,
             String username
@@ -83,6 +93,9 @@ public class TareaServicio {
         tareaRepositorio.save(tarea);
     }
 
+    /**
+     * Elimina una tarea si el usuario es el propietario.
+     */
     public void eliminarTarea(
             String id,
             String username
@@ -106,25 +119,5 @@ public class TareaServicio {
         }
 
         tareaRepositorio.delete(tarea);
-    }
-    public List<TareaResponseDTO> obtenerTareasDelUsuario(UUID usuarioId) {
-
-        List<Tarea> tareas =
-                tareaRepositorio.findByCreador(usuarioId);
-
-        return tareas.stream()
-                .map(this::convertirAResponseDTO)
-                .toList();
-    }
-    private TareaResponseDTO convertirAResponseDTO(Tarea tarea) {
-
-        return TareaResponseDTO.builder()
-                .id(tarea.getId())
-                .titulo(tarea.getTitulo())
-                .descripcion(tarea.getDescripcion())
-                .prioridad(String.valueOf(tarea.getPrioridad()))
-                .completada(tarea.getCompletada())
-                .fechaLimite(tarea.getFechaLimite())
-                .build();
     }
 }

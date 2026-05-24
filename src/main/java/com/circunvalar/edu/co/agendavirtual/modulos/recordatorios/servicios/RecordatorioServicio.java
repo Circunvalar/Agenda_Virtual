@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Logica de negocio para recordatorios y sus notificaciones.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,8 +30,8 @@ public class RecordatorioServicio {
 
     private final UsuarioRepositorio usuarioRepositorio;
 
-    /*
-        CREAR
+    /**
+     * Crea un recordatorio y lo asocia al usuario autenticado.
      */
     public Recordatorio crearRecordatorio(
             RecordatorioRequestDTO dto,
@@ -117,8 +120,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        LISTAR
+    /**
+     * Lista recordatorios activos del usuario.
      */
     public List<RecordatorioResponseDTO> obtenerRecordatoriosUsuario(
             String username
@@ -140,8 +143,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        ACTUALIZAR
+    /**
+     * Actualiza un recordatorio validando propiedad y valores por defecto.
      */
     public void actualizarRecordatorio(
             UUID id,
@@ -218,8 +221,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        COMPLETAR
+    /**
+     * Marca el recordatorio como completado y calcula la siguiente fecha si aplica.
      */
     public void marcarCompletado(
             UUID id,
@@ -259,8 +262,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        ARCHIVAR
+    /**
+     * Archiva el recordatorio si el usuario es propietario.
      */
     public void archivarRecordatorio(
             UUID id,
@@ -284,8 +287,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        OBTENER PENDIENTES
+    /**
+     * Obtiene recordatorios pendientes de notificacion.
      */
     public List<Recordatorio> obtenerPendientes() {
 
@@ -294,8 +297,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        PROCESAR RECORDATORIO
+    /**
+     * Verifica si debe notificarse el recordatorio y actualiza su estado.
      */
     public void procesarRecordatorio(
             Recordatorio recordatorio
@@ -343,8 +346,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        ACTUALIZAR FECHA
+    /**
+     * Calcula la siguiente fecha cuando el recordatorio es repetitivo.
      */
     private void actualizarSiguienteFecha(
             Recordatorio recordatorio
@@ -390,8 +393,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        ESTADO VISUAL
+    /**
+     * Calcula el estado visual del recordatorio para la UI.
      */
     public String calcularEstadoVisual(
             Recordatorio recordatorio
@@ -426,8 +429,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        DTO
+    /**
+     * Convierte una entidad a su DTO de respuesta.
      */
     private RecordatorioResponseDTO convertirDTO(
             Recordatorio recordatorio
@@ -462,8 +465,8 @@ public class RecordatorioServicio {
 
     }
 
-    /*
-        VALIDAR PROPIETARIO
+    /**
+     * Valida que el usuario sea propietario del recordatorio.
      */
     private void validarPropietario(
             Recordatorio recordatorio,
@@ -482,6 +485,9 @@ public class RecordatorioServicio {
 
         }
     }
+    /**
+     * Guarda recordatorios generados por la IA para el usuario.
+     */
     public void guardarRecordatoriosIA(
             List<RecordatorioRequestDTO> tareas,
             String username

@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Logica de negocio para la gestion de contactos.
+ */
 @Service
 @RequiredArgsConstructor
 public class ContactosServicio {
@@ -20,6 +23,9 @@ public class ContactosServicio {
     private final UsuarioRepositorio usuarioRepositorio;
     private final EventoRepositorio eventoRepositorio;
 
+    /**
+     * Agrega un contacto por telefono y evita duplicados.
+     */
     public String agregarContacto(
             String telefono,
             String username
@@ -56,6 +62,9 @@ public class ContactosServicio {
         return "Contacto agregado correctamente.";
     }
 
+    /**
+     * Obtiene contactos como entidades para uso interno.
+     */
     public List<Contactos> obtenerContactos(
             String username
     ) {
@@ -67,6 +76,9 @@ public class ContactosServicio {
         return contactosRepositorio.findByUsuario(usuario);
     }
 
+    /**
+     * Obtiene contactos en formato DTO para la UI.
+     */
     public List<ContactoResponseDTO> obtenerContactosUsuario(
             String username
     ) {
@@ -88,6 +100,9 @@ public class ContactosServicio {
                 .toList();
     }
 
+    /**
+     * Convierte una relacion de contacto a DTO con metricas de eventos en comun.
+     */
     private ContactoResponseDTO convertirAResponseDTO(
             Contactos contacto,
             Usuario usuario
@@ -124,6 +139,9 @@ public class ContactosServicio {
                 .eventosInvitado(eventosInvitado)
                 .build();
     }
+    /**
+     * Elimina la relacion de contacto del usuario.
+     */
     public void eliminarContacto(
             UUID contactoId,
             String username

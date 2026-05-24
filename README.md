@@ -1,85 +1,95 @@
-# Agenda Virtual
+# Agenda Virtual IA
 
-Aplicación web construida con Spring Boot para gestionar agenda personal: eventos, tareas, recordatorios, contactos, calendario e integración con IA.
+## Resumen
+Agenda Virtual IA es una aplicacion web para gestionar eventos, recordatorios, tareas y contactos, con un asistente de IA integrado. La interfaz usa Thymeleaf y el backend esta construido con Spring Boot, JPA y PostgreSQL. La IA se integra via WebClient hacia un proveedor local (por defecto, Ollama).
 
-## Funcionalidades principales
+## Arquitectura
+- **Capa web (MVC):** controladores que renderizan vistas y exponen endpoints REST.
+- **Capa de servicios:** logica de negocio por modulo (eventos, recordatorios, tareas, contactos, IA).
+- **Capa de datos:** entidades JPA y repositorios para persistencia.
+- **Seguridad:** Spring Security con login por formulario y roles.
+- **IA:** servicio central que construye prompts, llama al proveedor y mantiene memoria de chat.
 
-- Registro e inicio de sesión de usuarios.
-- Dashboard con resumen de eventos, tareas y recordatorios.
-- Gestión de eventos con invitados.
-- Gestión de recordatorios con estados y archivado lógico.
-- Gestión de contactos por usuario.
-- Vista de calendario con eventos y recordatorios.
-- Asistente de IA para interpretar mensajes y crear recordatorios automáticamente.
+### Modulos principales (backend)
+- **autentificacion:** registro y login de usuarios.
+- **dashboard:** vista principal con resumen.
+- **eventos:** CRUD de eventos e invitados.
+- **recordatorios:** CRUD, repeticion y scheduler de notificaciones.
+- **tareas:** CRUD basico de tareas.
+- **contactos:** gestion de contactos y relacion con eventos.
+- **calendario:** agregacion de eventos y recordatorios para calendario.
+- **ia:** generacion de recordatorios, chat con memoria, priorizacion y operaciones por lenguaje natural.
+- **usuarios:** entidad y repositorio de usuarios.
+- **security:** configuracion de seguridad y UserDetails.
 
-## Tecnologías
+## IA: implementacion y uso
+La integracion de IA se centraliza en `IAService` usando `WebClient`.
 
-- Java 17
-- Spring Boot (Web, Security, Thymeleaf, Data JPA)
-- PostgreSQL
-- Maven Wrapper (`mvnw`)
-- Docker / Docker Compose
+### Flujo general
+1. El controlador recibe un mensaje del usuario.
+2. `IAService` construye un prompt estricto (solo JSON).
+3. Se realiza un `POST` al proveedor (por defecto `/api/generate` o `/api/chat`).
+4. Se parsea la respuesta, se valida y se transforma a DTOs del sistema.
+5. Para chat con memoria, se guarda el historial por usuario y se agrega al contexto.
 
-## Estructura del proyecto
+### Endpoints de IA
+- `POST /api/ia/recordatorio`: convierte un mensaje en recordatorio estructurado.
+- `POST /api/ia/crear-recordatorios`: interpreta y guarda recordatorios automaticamente.
+- `POST /api/ia/chat`: chat con memoria.
+- `POST /api/ia/plan-diario`: genera plan diario.
+- `POST /api/ia/plan-semanal`: genera plan semanal.
+- `POST /api/ia/priorizar`: prioriza tareas existentes.
+- `POST /api/ia/tareas-nl`: aplica acciones en tareas por lenguaje natural.
+- `GET /api/ia/diagnostico`: prueba conectividad con el proveedor de IA.
 
-- `src/main/java/.../modulos/` lógica por dominios (`autentificacion` para autenticación, `dashboard`, `eventos`, `recordatorios`, `contactos`, `calendario`, `tareas`, `ia`).
-- `src/main/resources/templates/` vistas Thymeleaf.
-- `src/main/resources/static/` recursos frontend (CSS y JS).
-- `docker/postgres/init.sql` scripts de inicialización de base de datos.
-- `compose.yaml` orquestación local de servicios.
+### Memoria de chat
+- El historial se guarda por usuario en `IAChatMensaje`.
+- `IAService` agrega mensajes previos y el prompt de sistema antes de llamar al proveedor.
+- El limite se controla con `ai.memory.limit`.
 
-## Variables de entorno relevantes
+## Configuracion
+Variables de entorno soportadas (ver `src/main/resources/application.properties`):
+- `APP_PORT` (default: 4444)
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `AI_ENABLED` (default: true)
+- `AI_PROVIDER_URL` (default: http://localhost:11434)
+- `AI_PROVIDER_MODEL` (default: mistral)
+- `AI_MEMORY_LIMIT` (default: 12)
+- `AI_CONTEXT_CITY` (default: Bogota)
+- `AI_CONTEXT_TIMEZONE` (default: America/Bogota)
 
-Configuradas en `application.properties` (con valores por defecto para desarrollo local):
-
-- `APP_PORT` (por defecto: `4444`)
-- `SPRING_DATASOURCE_URL` (por defecto: `jdbc:postgresql://localhost:5432/agenda_virtual`)
-- `SPRING_DATASOURCE_USERNAME` (por defecto: `ADMINISTRADOR`)
-- `SPRING_DATASOURCE_PASSWORD` (por defecto: `123456`)
-- `AI_PROVIDER_URL` (por defecto: endpoint de Cohere)
-- `AI_PROVIDER_KEY` (token del proveedor IA)
-
-## Ejecución local
-
-1. Asegura una instancia de PostgreSQL disponible.
-2. Configura variables de entorno si no usarás los valores por defecto.
-3. Ejecuta la aplicación:
-
-```bash
-sh mvnw spring-boot:run
+## Ejecucion local (Windows PowerShell)
+```powershell
+cd C:\Agenda
+. .\load-env.ps1
+.\mvnw.cmd -DskipTests spring-boot:run
 ```
 
-Aplicación disponible en: `http://localhost:4444`
-
-## Ejecución con Docker Compose
-
-Levantar app + postgres (perfil `dev`):
-
-```bash
-docker compose --profile dev up --build
+### Probar IA local
+```powershell
+Invoke-RestMethod -Uri "http://localhost:4444/api/ia/diagnostico" -Method Get
 ```
 
-## Comandos útiles
-
-Construir proyecto:
-
-```bash
-sh mvnw -DskipTests package
+## Estructura del proyecto (backend)
+```
+src/main/java/com/circunvalar/edu/co/agendavirtual
+├─ compartido
+├─ modulos
+│  ├─ autentificacion
+│  ├─ calendario
+│  ├─ contactos
+│  ├─ dashboard
+│  ├─ eventos
+│  ├─ ia
+│  ├─ recordatorios
+│  ├─ tareas
+│  └─ usuarios
+└─ security
 ```
 
-Ejecutar pruebas:
-
-```bash
-sh mvnw test
-```
-
-> Nota: las pruebas de contexto requieren PostgreSQL activo y accesible en la configuración del datasource.
-
-## Rutas principales
-
-- `/` página de inicio.
-- `/login` y `/register` autenticación.
-- `/dashboard` panel principal (requiere sesión).
-- `/eventos`, `/recordatorios`, `/contactos`, `/calendario`, `/tareas` módulos de agenda.
-- `/ia` vista del asistente.
-- `/api/ia/**` endpoints REST de IA.
+## Notas de mantenimiento
+- Mantener prompts de IA con formato JSON estricto para parsing confiable.
+- Evitar mutar listas de repositorios sin crear copias mutables.
+- Reglas de acceso se encuentran en `ConfiguracionSeguridad`.

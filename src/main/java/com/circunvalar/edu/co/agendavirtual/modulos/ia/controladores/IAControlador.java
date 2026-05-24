@@ -1,6 +1,12 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.ia.controladores;
 
-import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.*;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAChatRequestDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAChatResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAMensajeDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IARecordatorioDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IARequestDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IATareaOperacionResultadoDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.ia.servicios.IAService;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioRequestDTO;
 import jakarta.validation.Valid;
@@ -12,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Endpoints REST para funciones de IA y automatizacion.
+ */
 @RestController
 @RequestMapping("/api/ia")
 @RequiredArgsConstructor
@@ -19,6 +28,9 @@ public class IAControlador {
 
     private final IAService iaService;
 
+    /**
+     * Convierte un mensaje en un recordatorio estructurado.
+     */
     @PostMapping("/recordatorio")
     public ResponseEntity<IAResponseDTO> procesarRecordatorio(
             @Valid
@@ -36,9 +48,11 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Genera un resumen para organizar el dia.
+     */
     @PostMapping("/organizar-dia")
-    public ResponseEntity<IAChatResponseDTO>
-    organizarDia(
+    public ResponseEntity<IAChatResponseDTO> organizarDia(
 
             @RequestBody
             IARequestDTO dto
@@ -59,6 +73,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Analiza texto y devuelve una respuesta directa.
+     */
     @PostMapping("/analizar")
     public ResponseEntity<?> analizar(
             @RequestBody Map<String, String> body
@@ -72,6 +89,9 @@ public class IAControlador {
         return ResponseEntity.ok(respuesta);
     }
 
+    /**
+     * Interpreta texto y retorna recordatorios sugeridos.
+     */
     @PostMapping("/interpretar")
     public List<IARecordatorioDTO> interpretar(
             @RequestBody IAMensajeDTO dto
@@ -83,10 +103,8 @@ public class IAControlador {
 
     }
 
-    /*
-        NUEVO ENDPOINT
-        CREA Y GUARDA
-        RECORDATORIOS AUTOMÁTICAMENTE
+    /**
+     * Interpreta texto, convierte a recordatorios y los guarda en BD.
      */
     @PostMapping("/crear-recordatorios")
     public ResponseEntity<?> crearRecordatoriosIA(
@@ -126,6 +144,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Verifica conectividad con el proveedor de IA.
+     */
     @GetMapping("/diagnostico")
     public ResponseEntity<?> diagnosticoOllama() {
 
@@ -134,6 +155,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Chat con memoria contextual del usuario.
+     */
     @PostMapping("/chat")
     public ResponseEntity<IAChatResponseDTO> chat(
             @Valid @RequestBody IAChatRequestDTO dto,
@@ -148,6 +172,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Genera plan diario con IA.
+     */
     @PostMapping("/plan-diario")
     public ResponseEntity<IAChatResponseDTO> planDiario(
             @RequestBody IAChatRequestDTO dto,
@@ -162,6 +189,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Genera plan semanal con IA.
+     */
     @PostMapping("/plan-semanal")
     public ResponseEntity<IAChatResponseDTO> planSemanal(
             @RequestBody IAChatRequestDTO dto,
@@ -176,6 +206,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Prioriza tareas existentes segun contexto.
+     */
     @PostMapping("/priorizar")
     public ResponseEntity<IAChatResponseDTO> priorizar(
             @RequestBody IAChatRequestDTO dto,
@@ -190,6 +223,9 @@ public class IAControlador {
         );
     }
 
+    /**
+     * Ejecuta acciones de tareas en lenguaje natural.
+     */
     @PostMapping("/tareas-nl")
     public ResponseEntity<IATareaOperacionResultadoDTO> tareasNL(
             @RequestBody IAChatRequestDTO dto,

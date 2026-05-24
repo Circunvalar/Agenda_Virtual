@@ -11,6 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Renderiza el dashboard con eventos, tareas y recordatorios del usuario.
+ */
 @Controller
 @RequiredArgsConstructor
 public class DashboardControlador {
@@ -19,6 +22,9 @@ public class DashboardControlador {
     private final TareaServicio tareaServicio;
     private final RecordatorioServicio recordatorioServicio;
 
+    /**
+     * Carga datos del usuario autenticado para el dashboard.
+     */
     @GetMapping("/dashboard")
     public String dashboard(
             @AuthenticationPrincipal CustomUserDetails userDetails,
