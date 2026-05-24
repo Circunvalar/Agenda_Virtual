@@ -2,6 +2,13 @@ package com.circunvalar.edu.co.agendavirtual.modulos.ia.servicios;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IARecordatorioDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAChatRequestDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IAChatResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IATareaAccionDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.dtos.IATareaOperacionResultadoDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.entidades.IAChatMensaje;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.entidades.IAChatRol;
+import com.circunvalar.edu.co.agendavirtual.modulos.ia.repositorios.IAChatMensajeRepositorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioRequestDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.CategoriaRecordatorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.PrioridadRecordatorio;
@@ -10,27 +17,33 @@ import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.Tipo
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.repositorios.RecordatorioRepositorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.entidades.Usuario;
 import com.circunvalar.edu.co.agendavirtual.modulos.usuarios.repositorios.UsuarioRepositorio;
+import com.circunvalar.edu.co.agendavirtual.modulos.tareas.dtos.TareaResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.tareas.entidades.Prioridad;
+import com.circunvalar.edu.co.agendavirtual.modulos.tareas.entidades.Tarea;
+import com.circunvalar.edu.co.agendavirtual.modulos.tareas.repositorios.TareaRepositorio;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-
-import java.net.UnknownHostException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
 import java.time.Duration;
-import java.net.InetAddress;
-import java.net.URI;
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,22 +59,74 @@ public class IAService {
 
     private final RecordatorioRepositorio recordatorioRepositorio;
 
-    @Value("${ai.provider.url:api-inference.huggingface.co}")
-    private String aiProviderUrl;
+    private final TareaRepositorio tareaRepositorio;
+
+    private final IAChatMensajeRepositorio iaChatMensajeRepositorio;
+
+    @Value("${ai.provider.url:http://localhost:11434}")
+    private String aiBaseUrl;
+
+    @Value("${ai.provider.model:mistral}")
+    private String aiModel;
+
+    @Value("${ai.memory.limit:12}")
+    private int memoryLimit;
+
+    @Value("${ai.context.city:Bogota}")
+    private String contextCity;
+
+    @Value("${ai.context.timezone:America/Bogota}")
+    private String contextTimeZone;
+
+    @Value("${ai.enabled:true}")
+    private boolean aiEnabled;
 
     public IAResponseDTO procesarMensaje(
             String mensajeUsuario
     ) {
 
+        if(!aiEnabled){
+
+            return IAResponseDTO.builder()
+                    .titulo("IA deshabilitada")
+                    .mensaje("La IA esta desactivada en este entorno")
+                    .build();
+
+        }
+
         String prompt = construirPrompt(
                 mensajeUsuario
         );
 
-        // Llamar al proveedor de IA (Hugging Face)
-        String respuesta = callHuggingFace(prompt);
+        JSONObject body = new JSONObject();
 
-        // La respuesta ya debe ser el texto generado por el modelo
-        String contenido = respuesta;
+        body.put(
+                "model",
+                aiModel
+        );
+
+        body.put(
+                "prompt",
+                prompt
+        );
+
+        body.put(
+                "stream",
+                false
+        );
+
+        String respuesta = webClient.post()
+                .uri("/api/generate")
+                .bodyValue(body.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        JSONObject jsonRespuesta =
+                new JSONObject(respuesta);
+
+        String contenido =
+                jsonRespuesta.getString("response");
 
         log.info("RESPUESTA IA: {}", contenido);
 
@@ -208,144 +273,48 @@ public class IAService {
 
     }
 
-    /**
-     * Helper que llama al endpoint de Hugging Face.
-     * Envía {"inputs": prompt, "options": {"wait_for_model": true}}
-     * y devuelve el texto generado por el modelo. Intenta extraer
-     * "generated_text" si la respuesta viene en formato JSON.
-     */
-    private String callHuggingFace(String prompt){
-
-        try{
-
-            // Cohere-style payload
-            Map<String,Object> payload = new HashMap<>();
-            payload.put("model", "command-xsmall-nightly");
-            payload.put("prompt", prompt);
-            payload.put("max_tokens", 300);
-            payload.put("temperature", 0.2);
-
-            String response = webClient.post()
-                    .bodyValue(payload)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            if(response == null) return "";
-
-            try{
-                JsonNode node = objectMapper.readTree(response);
-
-                // Cohere / some inference APIs: { generations: [ { text: "..." } ] }
-                if(node.has("generations") && node.get("generations").isArray() && node.get("generations").size() > 0){
-                    return node.get("generations").get(0).path("text").asText("");
-                }
-
-                // Ollama-like: { results: [ { content: [ { type: "output_text", text: "..." } ] } ] }
-                if(node.has("results") && node.get("results").isArray() && node.get("results").size() > 0){
-                    JsonNode firstResult = node.get("results").get(0);
-                    if(firstResult.has("content") && firstResult.get("content").isArray() && firstResult.get("content").size() > 0){
-                        for(JsonNode contentNode : firstResult.get("content")){
-                            if(contentNode.has("text")){
-                                String t = contentNode.path("text").asText("");
-                                if(!t.isBlank()) return t;
-                            }
-                            if(contentNode.has("type") && contentNode.path("type").asText().equals("output_text") && contentNode.has("text")){
-                                String t = contentNode.path("text").asText("");
-                                if(!t.isBlank()) return t;
-                            }
-                        }
-                    }
-                    // Some versions may include a `text` at the result root
-                    if(firstResult.has("text")){
-                        String t = firstResult.path("text").asText("");
-                        if(!t.isBlank()) return t;
-                    }
-                }
-
-                // OpenAI-style / HF chat outputs: { choices: [ { message: { content: "..." } } ] } or choices[0].text
-                if(node.has("choices") && node.get("choices").isArray() && node.get("choices").size() > 0){
-                    JsonNode choice = node.get("choices").get(0);
-                    if(choice.has("text")){
-                        String t = choice.path("text").asText("");
-                        if(!t.isBlank()) return t;
-                    }
-                    if(choice.has("message") && choice.get("message").has("content")){
-                        String t = choice.get("message").path("content").asText("");
-                        if(!t.isBlank()) return t;
-                    }
-                }
-
-                // Fallback: devolver la representación cruda
-                return response;
-
-            }catch(Exception e){
-                // No es JSON o no contiene campos esperados
-                return response;
-            }
-
-        }catch(Exception e){
-
-            // Buscar la causa raíz
-            Throwable root = e;
-            while(root.getCause() != null){
-                root = root.getCause();
-            }
-
-            if(root instanceof UnknownHostException){
-                String host = aiProviderUrl;
-                String msg = "No se pudo resolver el host para el proveedor IA (" + host + "). \n" +
-                        "Verifica que la máquina tenga conexión a Internet, que el DNS funcione, o si necesitas configurar un proxy/firewall.\n" +
-                        "Mensaje original: " + root.getMessage();
-
-                log.error(msg, e);
-
-                throw new RuntimeException(msg, e);
-            }
-
-            log.error("ERROR llamando al proveedor IA", e);
-            throw new RuntimeException("Error llamando al proveedor IA", e);
-        }
-
-    }
     public String organizarDia(
             String mensajeUsuario
     ) {
 
+        if(!aiEnabled){
+            return "[]";
+        }
+
         String prompt = """
-Eres una IA especializada en organizar tareas.
+ Eres una IA especializada en organizar tareas.
 
-Debes convertir el texto del usuario en un JSON válido.
+ Debes convertir el texto del usuario en un JSON válido.
 
-REGLAS IMPORTANTES:
+ REGLAS IMPORTANTES:
 
-1. SOLO responde JSON.
-2. NO expliques nada.
-3. NO uses markdown.
-4. NO uses ```json
-5. Siempre devuelve un ARRAY.
-6. Todas las fechas deben tener formato:
-yyyy-MM-ddTHH:mm:ss
+ 1. SOLO responde JSON.
+ 2. NO expliques nada.
+ 3. NO uses markdown.
+ 4. NO uses ```json
+ 5. Siempre devuelve un ARRAY.
+ 6. Todas las fechas deben tener formato:
+ yyyy-MM-ddTHH:mm:ss
 
-7. Si el usuario NO especifica fecha:
-- usar la fecha actual
-- usar una hora lógica cercana
+ 7. Si el usuario NO especifica fecha:
+ - usar la fecha actual
+ - usar una hora lógica cercana
 
-8. Categorías permitidas:
-ESTUDIO
-TRABAJO
-SALUD
-PERSONAL
-OTRO
+ 8. Categorías permitidas:
+ ESTUDIO
+ TRABAJO
+ SALUD
+ PERSONAL
+ OTRO
 
-9. Prioridades permitidas:
-ALTA
-MEDIA
-BAJA
+ 9. Prioridades permitidas:
+ ALTA
+ MEDIA
+ BAJA
 
-Formato exacto:
+ Formato exacto:
 
-[
+ [
   {
     "titulo": "string",
     "mensaje": "string",
@@ -353,15 +322,15 @@ Formato exacto:
     "prioridad": "ALTA",
     "categoria": "ESTUDIO"
   }
-]
+ ]
 
-Texto del usuario:
-""" + mensajeUsuario;
+ Texto del usuario:
+ """ + mensajeUsuario;
         JSONObject body = new JSONObject();
 
         body.put(
                 "model",
-                "mistral"
+                aiModel
         );
 
         body.put(
@@ -374,58 +343,82 @@ Texto del usuario:
                 false
         );
 
-        // Llamamos al proveedor con el prompt ya construido
-        String respuesta = callHuggingFace(prompt);
+        String respuesta =
+                webClient.post()
+                        .uri("/api/generate")
+                        .bodyValue(body.toString())
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
 
-        return respuesta;
+        JSONObject json =
+                new JSONObject(respuesta);
+
+        return json.getString(
+                "response"
+        );
     }
+
     public String analizarTareas(String mensajeUsuario) {
 
+        if(!aiEnabled){
+            return "{}";
+        }
+
         String prompt = """
-            Eres una IA organizadora profesional.
+             Eres una IA organizadora profesional.
 
-            Analiza el siguiente mensaje y responde
-            ÚNICAMENTE en formato JSON.
+             Analiza el siguiente mensaje y responde
+             ÚNICAMENTE en formato JSON.
 
-            Extrae:
-            - titulo
-            - descripcion
-            - prioridad
-            - categoria
-            - duracionMinutos
-            - fechaSugerida
+             Extrae:
+             - titulo
+             - descripcion
+             - prioridad
+             - categoria
+             - duracionMinutos
+             - fechaSugerida
 
-            PRIORIDADES:
-            ALTA
-            MEDIA
-            BAJA
+             PRIORIDADES:
+             ALTA
+             MEDIA
+             BAJA
 
-            CATEGORIAS:
-            ESTUDIO
-            TRABAJO
-            PERSONAL
-            SALUD
-            OTRO
+             CATEGORIAS:
+             ESTUDIO
+             TRABAJO
+             PERSONAL
+             SALUD
+             OTRO
 
-            MENSAJE:
-            """ + mensajeUsuario;
+             MENSAJE:
+             """ + mensajeUsuario;
 
         Map<String, Object> body = new HashMap<>();
 
-        body.put("model", "mistral");
+        body.put("model", aiModel);
 
         body.put("prompt", prompt);
 
         body.put("stream", false);
 
-        // Llamada al proveedor de IA
-        String respuesta = callHuggingFace(prompt);
+        Map<String, Object> response = webClient.post()
+                .uri("/api/generate")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        return respuesta;
+        return Objects.toString(response.get("response"), "");
     }
+
     public List<IARecordatorioDTO> interpretarTareas(
             String mensaje
     ) {
+
+        if(!aiEnabled){
+            return List.of();
+        }
 
         LocalDateTime ahora =
                 LocalDateTime.now();
@@ -535,7 +528,7 @@ MENSAJE USUARIO:
 
         Map<String, Object> request = new HashMap<>();
 
-        request.put("model", "mistral");
+        request.put("model", aiModel);
 
         request.put("prompt", prompt);
 
@@ -543,8 +536,17 @@ MENSAJE USUARIO:
 
         request.put("temperature", 0.1);
 
-        // Llamada al proveedor de IA
-        String respuestaIA = callHuggingFace(prompt);
+        Map response = webClient.post()
+                .uri("/api/generate")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        String respuestaIA = Objects.toString(
+                response.get("response"),
+                ""
+        );
 
         log.info(
                 "RESPUESTA IA INTERPRETAR: {}",
@@ -579,6 +581,7 @@ MENSAJE USUARIO:
         }
 
     }
+
     public List<RecordatorioRequestDTO> convertirARecordatorios(
             List<IARecordatorioDTO> tareasIA
     ) {
@@ -806,6 +809,7 @@ MENSAJE USUARIO:
         recordatorioRepositorio.saveAll(nuevos);
 
     }
+
     private String valorSeguro(
             String valor,
             String defecto
@@ -835,61 +839,793 @@ MENSAJE USUARIO:
         return limpio;
 
     }
-    private LocalDateTime fechaPorDefecto() {
 
-        return LocalDateTime.now()
-                .plusHours(2);
+    public Map<String, Object> diagnosticarOllama() {
 
-    }
+        Map<String, Object> resultado = new HashMap<>();
+        resultado.put("baseUrl", aiBaseUrl);
 
-    /**
-     * Diagnóstico rápido para comprobar resolución DNS y conectividad HTTP
-     * hacia el proveedor configurado en `ai.provider.url`.
-     * Devuelve un Map con información de host, ips, y estado HTTP si es posible.
-     */
-    public Map<String,Object> diagnosticarProveedor(){
-
-        Map<String,Object> resultado = new HashMap<>();
-
-        try{
-            String raw = aiProviderUrl == null ? "" : aiProviderUrl;
-            String urlStr = raw;
-            if(!urlStr.startsWith("http")){
-                urlStr = "https://" + urlStr;
-            }
-
-            URI uri = new URI(urlStr);
-            String host = uri.getHost();
-
-            resultado.put("configuredUrl", urlStr);
-            resultado.put("host", host);
-
-            InetAddress[] addrs = InetAddress.getAllByName(host);
-            List<String> ips = Arrays.stream(addrs)
-                    .map(InetAddress::getHostAddress)
-                    .collect(Collectors.toList());
-
-            resultado.put("resolvedIps", ips);
-
-        }catch(Exception e){
-            resultado.put("dnsError", e.toString());
+        if(!aiEnabled){
+            resultado.put("ok", false);
+            resultado.put("error", "IA deshabilitada");
+            return resultado;
         }
 
-        // Intentar una llamada HTTP ligera al baseUrl para ver si responde
-        try{
-            // Usamos GET vacío para obtener el status (puede devolver 401/403 si falta auth)
-            Integer status = webClient.get()
-                    .uri("")
-                    .exchangeToMono(resp -> reactor.core.publisher.Mono.just(resp.statusCode().value()))
-                    .block(Duration.ofSeconds(10));
+        try {
 
-            resultado.put("httpStatus", status);
+            Map<String, Object> response = webClient.get()
+                    .uri("/api/tags")
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block(Duration.ofSeconds(5));
 
-        }catch(Exception e){
-            resultado.put("httpError", e.toString());
+            resultado.put("ok", true);
+            resultado.put("response", response);
+
+        } catch (Exception e) {
+
+            resultado.put("ok", false);
+            resultado.put("error", e.getMessage());
+
         }
 
         return resultado;
 
     }
+
+    public IAChatResponseDTO chatConMemoria(
+            IAChatRequestDTO request,
+            String username
+    ) {
+
+        if(!aiEnabled){
+
+            return IAChatResponseDTO.builder()
+                    .respuesta("IA deshabilitada")
+                    .build();
+
+        }
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Map<String, String>> mensajes =
+                construirMensajesConMemoria(
+                        usuario,
+                        "CHAT",
+                        request.getPreferencias(),
+                        request.getMensaje()
+                );
+
+        String respuesta = llamarOllamaChat(mensajes);
+
+        guardarMensaje(IAChatRol.USER, request.getMensaje(), usuario);
+        guardarMensaje(IAChatRol.ASSISTANT, respuesta, usuario);
+
+        return IAChatResponseDTO.builder()
+                .respuesta(respuesta)
+                .build();
+
+    }
+
+    public IAChatResponseDTO generarPlanDiario(
+            IAChatRequestDTO request,
+            String username
+    ) {
+
+        return generarPlan(
+                request,
+                username,
+                "PLAN_DIARIO"
+        );
+
+    }
+
+    public IAChatResponseDTO generarPlanSemanal(
+            IAChatRequestDTO request,
+            String username
+    ) {
+
+        return generarPlan(
+                request,
+                username,
+                "PLAN_SEMANAL"
+        );
+
+    }
+
+    public IAChatResponseDTO priorizarTareas(
+            IAChatRequestDTO request,
+            String username
+    ) {
+
+        if(!aiEnabled){
+
+            return IAChatResponseDTO.builder()
+                    .respuesta("IA deshabilitada")
+                    .build();
+
+        }
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Tarea> tareas =
+                tareaRepositorio.findByCreador(usuario);
+
+        String contextoTareas =
+                construirContextoTareas(tareas);
+
+        String contenidoUsuario = "Priorizacion de tareas.\n" +
+                "Instruccion del usuario: " +
+                valorSeguro(request.getMensaje(), "") +
+                "\nContexto de tareas:\n" +
+                contextoTareas +
+                "\nPreferencias: " +
+                valorSeguro(request.getPreferencias(), "");
+
+        List<Map<String, String>> mensajes =
+                construirMensajesConMemoria(
+                        usuario,
+                        "PRIORIZAR",
+                        request.getPreferencias(),
+                        contenidoUsuario
+                );
+
+        String respuesta = llamarOllamaChat(mensajes);
+
+        guardarMensaje(IAChatRol.USER, request.getMensaje(), usuario);
+        guardarMensaje(IAChatRol.ASSISTANT, respuesta, usuario);
+
+        return IAChatResponseDTO.builder()
+                .respuesta(respuesta)
+                .build();
+
+    }
+
+    public IATareaOperacionResultadoDTO procesarTareasNL(
+            IAChatRequestDTO request,
+            String username
+    ) {
+
+        if(!aiEnabled){
+
+            return IATareaOperacionResultadoDTO.builder()
+                    .advertencias(
+                            List.of("IA deshabilitada")
+                    )
+                    .build();
+
+        }
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Tarea> tareas =
+                tareaRepositorio.findByCreador(usuario);
+
+        String contextoTareas =
+                construirContextoTareas(tareas);
+
+        String contenidoUsuario = "Instruccion: " +
+                request.getMensaje() +
+                "\n\nTareas actuales:\n" +
+                contextoTareas +
+                "\n\nDevuelve SOLO JSON como ARRAY de acciones." +
+                " Cada objeto debe tener: accion, id (opcional), " +
+                "titulo, descripcion, prioridad, fechaLimite." +
+                " Acciones validas: CREAR, ACTUALIZAR, COMPLETAR, ELIMINAR." +
+                " fechaLimite en formato yyyy-MM-dd.";
+
+        List<Map<String, String>> mensajes =
+                construirMensajesConMemoria(
+                        usuario,
+                        "TAREAS_NL",
+                        request.getPreferencias(),
+                        contenidoUsuario
+                );
+
+        String respuesta = llamarOllamaChat(mensajes);
+
+        List<IATareaAccionDTO> acciones;
+
+        try {
+
+            String limpio = respuesta
+                    .replace("```json", "")
+                    .replace("```", "")
+                    .trim();
+
+            acciones = objectMapper.readValue(
+                    limpio,
+                    new TypeReference<List<IATareaAccionDTO>>() {}
+            );
+
+        } catch (Exception e) {
+
+            return IATareaOperacionResultadoDTO.builder()
+                    .advertencias(
+                            List.of(
+                                    "No se pudo interpretar JSON de acciones"
+                            )
+                    )
+                    .build();
+
+        }
+
+        IATareaOperacionResultadoDTO resultado =
+                aplicarAccionesTareas(acciones, usuario);
+
+        guardarMensaje(IAChatRol.USER, request.getMensaje(), usuario);
+        guardarMensaje(IAChatRol.ASSISTANT, respuesta, usuario);
+
+        return resultado;
+
+    }
+
+    private IAChatResponseDTO generarPlan(
+            IAChatRequestDTO request,
+            String username,
+            String modo
+    ) {
+
+        if(!aiEnabled){
+
+            return IAChatResponseDTO.builder()
+                    .respuesta("IA deshabilitada")
+                    .build();
+
+        }
+
+        Usuario usuario = usuarioRepositorio
+                .findByNombreDeUsuario(username)
+                .orElseThrow();
+
+        List<Tarea> tareas =
+                tareaRepositorio.findByCreador(usuario);
+
+        String contextoTareas =
+                construirContextoTareas(tareas);
+
+        String contenidoUsuario = "Genera un plan " +
+                ("PLAN_DIARIO".equals(modo) ? "diario" : "semanal") +
+                " optimizado.\n" +
+                "Instruccion del usuario: " +
+                valorSeguro(request.getMensaje(), "") +
+                "\nTareas actuales:\n" +
+                contextoTareas +
+                "\nPreferencias: " +
+                valorSeguro(request.getPreferencias(), "");
+
+        List<Map<String, String>> mensajes =
+                construirMensajesConMemoria(
+                        usuario,
+                        modo,
+                        request.getPreferencias(),
+                        contenidoUsuario
+                );
+
+        String respuesta = llamarOllamaChat(mensajes);
+
+        guardarMensaje(IAChatRol.USER, request.getMensaje(), usuario);
+        guardarMensaje(IAChatRol.ASSISTANT, respuesta, usuario);
+
+        return IAChatResponseDTO.builder()
+                .respuesta(respuesta)
+                .build();
+
+    }
+
+    private List<Map<String, String>> construirMensajesConMemoria(
+            Usuario usuario,
+            String modo,
+            String preferencias,
+            String contenidoUsuario
+    ) {
+
+        List<Map<String, String>> mensajes =
+                new ArrayList<>();
+
+        mensajes.add(
+                Map.of(
+                        "role",
+                        "system",
+                        "content",
+                        construirPromptSistema(
+                                modo,
+                                preferencias,
+                                usuario
+                        )
+                )
+        );
+
+        // Obtener historial (mutable) y añadirlo a la lista de mensajes
+        List<IAChatMensaje> historial = obtenerHistorial(usuario);
+
+        for (IAChatMensaje mensajeHist : historial) {
+
+            mensajes.add(
+                    Map.of(
+                            "role",
+                            mapearRol(mensajeHist.getRol()),
+                            "content",
+                            mensajeHist.getContenido()
+                    )
+            );
+
+        }
+
+        mensajes.add(
+                Map.of(
+                        "role",
+                        "user",
+                        "content",
+                        contenidoUsuario
+                )
+        );
+
+        return mensajes;
+
+    }
+
+    private String construirPromptSistema(
+            String modo,
+            String preferencias,
+            Usuario usuario
+    ) {
+
+        ZonedDateTime ahora =
+                ZonedDateTime.now(
+                        ZoneId.of(contextTimeZone)
+                );
+
+        String fechaHora = ahora.format(
+                DateTimeFormatter.ofPattern(
+                        "yyyy-MM-dd HH:mm"
+                )
+        );
+
+        return "Eres un asistente de agenda virtual. " +
+                "Responde en espanol neutro y claro. " +
+                "Contexto local: " + contextCity + ". " +
+                "Considera trafico en horas pico (06:00-09:00 y 17:00-20:00) " +
+                "y clima cambiante; sugiere margen de desplazamiento. " +
+                "Fecha/hora local: " + fechaHora + ". " +
+                "Modo: " + modo + ". " +
+                "Preferencias del usuario: " +
+                valorSeguro(preferencias, "") + ".";
+
+    }
+
+    private List<IAChatMensaje> obtenerHistorial(
+            Usuario usuario
+    ) {
+
+        List<IAChatMensaje> mensajesOriginales = iaChatMensajeRepositorio
+                .findByUsuarioOrderByCreatedAtDesc(
+                        usuario,
+                        PageRequest.of(0, memoryLimit)
+                )
+                .getContent();
+
+        if(mensajesOriginales == null || mensajesOriginales.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        List<IAChatMensaje> mensajes = new ArrayList<>(mensajesOriginales);
+        Collections.reverse(mensajes);
+
+        return mensajes;
+
+    }
+
+    private void guardarMensaje(
+            IAChatRol rol,
+            String contenido,
+            Usuario usuario
+    ) {
+
+        if(contenido == null || contenido.isBlank()){
+
+            return;
+
+        }
+
+        IAChatMensaje mensaje = IAChatMensaje.builder()
+                .rol(rol)
+                .contenido(contenido)
+                .usuario(usuario)
+                .build();
+
+        iaChatMensajeRepositorio.save(mensaje);
+
+    }
+
+    private String mapearRol(
+            IAChatRol rol
+    ) {
+
+        return switch (rol) {
+            case SYSTEM -> "system";
+            case USER -> "user";
+            case ASSISTANT -> "assistant";
+        };
+
+    }
+
+    private String llamarOllamaChat(
+            List<Map<String, String>> mensajes
+    ) {
+
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("model", aiModel);
+        body.put("messages", mensajes);
+        body.put("stream", false);
+
+        Map<String, Object> response = webClient.post()
+                .uri("/api/chat")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        return extraerContenidoChat(response);
+
+    }
+
+    private String extraerContenidoChat(
+            Map<String, Object> respuesta
+    ) {
+
+        if(respuesta == null){
+
+            return "";
+
+        }
+
+        Object mensaje = respuesta.get("message");
+
+        if(mensaje instanceof Map){
+
+            Map<?, ?> mensajeMap = (Map<?, ?>) mensaje;
+            Object contenido = mensajeMap.get("content");
+
+            if(contenido != null){
+
+                return contenido.toString();
+
+            }
+
+        }
+
+        Object respuestaTexto = respuesta.get("response");
+
+        if(respuestaTexto != null){
+
+            return respuestaTexto.toString();
+
+        }
+
+        return respuesta.toString();
+
+    }
+
+    private String construirContextoTareas(
+            List<Tarea> tareas
+    ) {
+
+        if(tareas == null || tareas.isEmpty()){
+
+            return "Sin tareas registradas.";
+
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (Tarea tarea : tareas) {
+
+            builder.append("- [")
+                    .append(tarea.getId())
+                    .append("] ")
+                    .append(valorSeguro(tarea.getTitulo(), "Sin titulo"))
+                    .append(" | prioridad: ")
+                    .append(tarea.getPrioridad())
+                    .append(" | limite: ")
+                    .append(tarea.getFechaLimite())
+                    .append(" | completada: ")
+                    .append(Boolean.TRUE.equals(tarea.getCompletada()))
+                    .append("\n");
+
+        }
+
+        return builder.toString();
+
+    }
+
+    private IATareaOperacionResultadoDTO aplicarAccionesTareas(
+            List<IATareaAccionDTO> acciones,
+            Usuario usuario
+    ) {
+
+        IATareaOperacionResultadoDTO resultado =
+                IATareaOperacionResultadoDTO.builder()
+                        .build();
+
+        for (IATareaAccionDTO accion : acciones) {
+
+            if(accion == null){
+
+                continue;
+
+            }
+
+            String tipo = valorSeguro(accion.getAccion(), "").toUpperCase();
+
+            switch (tipo) {
+                case "CREAR" -> crearTarea(accion, usuario, resultado);
+                case "ACTUALIZAR" -> actualizarTarea(accion, usuario, resultado);
+                case "COMPLETAR" -> completarTarea(accion, usuario, resultado);
+                case "ELIMINAR" -> eliminarTarea(accion, usuario, resultado);
+                default -> resultado.getAdvertencias()
+                        .add("Accion desconocida: " + accion.getAccion());
+            }
+
+        }
+
+        return resultado;
+
+    }
+
+    private void crearTarea(
+            IATareaAccionDTO accion,
+            Usuario usuario,
+            IATareaOperacionResultadoDTO resultado
+    ) {
+
+        Tarea tarea = Tarea.builder()
+                .titulo(
+                        valorSeguro(
+                                accion.getTitulo(),
+                                "Tarea sin titulo"
+                        )
+                )
+                .descripcion(accion.getDescripcion())
+                .prioridad(parsearPrioridad(accion.getPrioridad()))
+                .completada(false)
+                .fechaLimite(parsearFecha(accion.getFechaLimite(), resultado))
+                .creador(usuario)
+                .build();
+
+        tareaRepositorio.save(tarea);
+
+        resultado.getCreadas().add(convertirTarea(tarea));
+
+    }
+
+    private void actualizarTarea(
+            IATareaAccionDTO accion,
+            Usuario usuario,
+            IATareaOperacionResultadoDTO resultado
+    ) {
+
+        Tarea tarea = buscarTarea(usuario, accion.getId(), accion.getTitulo());
+
+        if(tarea == null){
+
+            resultado.getAdvertencias().add(
+                    "No se encontro tarea para actualizar"
+            );
+            return;
+
+        }
+
+        if(accion.getTitulo() != null && !accion.getTitulo().isBlank()){
+
+            tarea.setTitulo(accion.getTitulo());
+
+        }
+
+        if(accion.getDescripcion() != null){
+
+            tarea.setDescripcion(accion.getDescripcion());
+
+        }
+
+        if(accion.getPrioridad() != null){
+
+            tarea.setPrioridad(parsearPrioridad(accion.getPrioridad()));
+
+        }
+
+        if(accion.getFechaLimite() != null){
+
+            tarea.setFechaLimite(parsearFecha(accion.getFechaLimite(), resultado));
+
+        }
+
+        tareaRepositorio.save(tarea);
+
+        resultado.getActualizadas().add(convertirTarea(tarea));
+
+    }
+
+    private void completarTarea(
+            IATareaAccionDTO accion,
+            Usuario usuario,
+            IATareaOperacionResultadoDTO resultado
+    ) {
+
+        Tarea tarea = buscarTarea(usuario, accion.getId(), accion.getTitulo());
+
+        if(tarea == null){
+
+            resultado.getAdvertencias().add(
+                    "No se encontro tarea para completar"
+            );
+            return;
+
+        }
+
+        tarea.setCompletada(true);
+
+        tareaRepositorio.save(tarea);
+
+        resultado.getCompletadas().add(tarea.getId().toString());
+
+    }
+
+    private void eliminarTarea(
+            IATareaAccionDTO accion,
+            Usuario usuario,
+            IATareaOperacionResultadoDTO resultado
+    ) {
+
+        Tarea tarea = buscarTarea(usuario, accion.getId(), accion.getTitulo());
+
+        if(tarea == null){
+
+            resultado.getAdvertencias().add(
+                    "No se encontro tarea para eliminar"
+            );
+            return;
+
+        }
+
+        tareaRepositorio.delete(tarea);
+
+        resultado.getEliminadas().add(tarea.getId().toString());
+
+    }
+
+    private Tarea buscarTarea(
+            Usuario usuario,
+            String id,
+            String titulo
+    ) {
+
+        if(id != null && !id.isBlank()){
+
+            try {
+
+                UUID uuid = UUID.fromString(id.trim());
+
+                return tareaRepositorio.findById(uuid)
+                        .filter(t -> t.getCreador() != null &&
+                                t.getCreador().getId().equals(usuario.getId()))
+                        .orElse(null);
+
+            } catch (Exception e) {
+
+                return null;
+
+            }
+
+        }
+
+        if(titulo != null && !titulo.isBlank()){
+
+            List<Tarea> tareas = tareaRepositorio
+                    .findByCreadorAndTituloIgnoreCase(
+                            usuario,
+                            titulo.trim()
+                    );
+
+            if(!tareas.isEmpty()){
+
+                return tareas.get(0);
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+    private Prioridad parsearPrioridad(
+            String prioridad
+    ) {
+
+        if(prioridad == null || prioridad.isBlank()){
+
+            return Prioridad.MEDIA;
+
+        }
+
+        try {
+
+            return Prioridad.valueOf(
+                    prioridad.trim().toUpperCase()
+            );
+
+        } catch (Exception e) {
+
+            return Prioridad.MEDIA;
+
+        }
+
+    }
+
+    private LocalDate parsearFecha(
+            String fecha,
+            IATareaOperacionResultadoDTO resultado
+    ) {
+
+        if(fecha == null || fecha.isBlank()){
+
+            return null;
+
+        }
+
+        try {
+
+            return LocalDate.parse(fecha.trim());
+
+        } catch (Exception e) {
+
+            resultado.getAdvertencias().add(
+                    "Fecha invalida: " + fecha
+            );
+            return null;
+
+        }
+
+    }
+
+    private TareaResponseDTO convertirTarea(
+            Tarea tarea
+    ) {
+
+        return TareaResponseDTO.builder()
+                .id(tarea.getId())
+                .titulo(tarea.getTitulo())
+                .descripcion(tarea.getDescripcion())
+                .prioridad(
+                        tarea.getPrioridad() != null
+                                ? tarea.getPrioridad().name()
+                                : null
+                )
+                .completada(tarea.getCompletada())
+                .fechaLimite(tarea.getFechaLimite())
+                .creador(
+                        tarea.getCreador() != null
+                                ? tarea.getCreador().getNombreDeUsuario()
+                                : null
+                )
+                .invitados(
+                        tarea.getInvitados() == null
+                                ? List.of()
+                                : tarea.getInvitados().stream()
+                                .map(Usuario::getNombreDeUsuario)
+                                .toList()
+                )
+                .build();
+
+    }
+
+
 }

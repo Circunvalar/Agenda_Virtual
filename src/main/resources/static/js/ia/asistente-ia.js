@@ -13,6 +13,74 @@ document.addEventListener(
                 "respuestaIA"
             );
 
+        const accionIA =
+            document.getElementById("iaAccion");
+
+        const preferenciasIA =
+            document.getElementById("preferenciasIA");
+
+        const acciones = {
+            "crear-recordatorios": {
+                endpoint: "/api/ia/crear-recordatorios",
+                tipo: "recordatorios",
+                textoBoton: "Analizar y crear tareas",
+                textoCargando: "La IA está organizando tus tareas..."
+            },
+            "chat": {
+                endpoint: "/api/ia/chat",
+                tipo: "texto",
+                textoBoton: "Enviar al chat",
+                textoCargando: "La IA está respondiendo..."
+            },
+            "plan-diario": {
+                endpoint: "/api/ia/plan-diario",
+                tipo: "texto",
+                textoBoton: "Generar plan diario",
+                textoCargando: "La IA está creando tu plan diario..."
+            },
+            "plan-semanal": {
+                endpoint: "/api/ia/plan-semanal",
+                tipo: "texto",
+                textoBoton: "Generar plan semanal",
+                textoCargando: "La IA está creando tu plan semanal..."
+            },
+            "priorizar": {
+                endpoint: "/api/ia/priorizar",
+                tipo: "texto",
+                textoBoton: "Priorizar tareas",
+                textoCargando: "La IA está priorizando tus tareas..."
+            },
+            "tareas-nl": {
+                endpoint: "/api/ia/tareas-nl",
+                tipo: "tareas-nl",
+                textoBoton: "Aplicar acciones en tareas",
+                textoCargando: "La IA está interpretando acciones..."
+            }
+        };
+
+        function actualizarTextoBoton(){
+
+            const config =
+                acciones[accionIA.value];
+
+            if(config){
+                btnIA.innerHTML = `
+
+<i class="fa-solid fa-wand-magic-sparkles"></i>
+${config.textoBoton}
+
+`;
+            }
+
+        }
+
+        accionIA.addEventListener(
+            "change",
+            actualizarTextoBoton
+        );
+
+        actualizarTextoBoton();
+
         btnIA.addEventListener(
             "click",
             async () => {
@@ -29,6 +97,9 @@ document.addEventListener(
                     return;
 
                 }
+
+                const accionConfig =
+                    acciones[accionIA.value];
 
                 btnIA.disabled = true;
 
@@ -48,7 +119,7 @@ Analizando...
     <div class="loading-spinner"></div>
 
 <h3>
-    La IA está organizando tus tareas...
+    ${accionConfig.textoCargando}
 </h3>
 
 </div>
@@ -59,9 +130,22 @@ Analizando...
 
                 try{
 
+                    const body = {
+                        mensaje: mensaje
+                    };
+
+                    if(accionIA.value !== "crear-recordatorios"){
+                        const preferencias =
+                            preferenciasIA.value.trim();
+
+                        if(preferencias){
+                            body.preferencias = preferencias;
+                        }
+                    }
+
                     const response =
                         await fetch(
-                            "/api/ia/crear-recordatorios",
+                            accionConfig.endpoint,
                             {
                                 method:"POST",
 
@@ -70,9 +154,7 @@ Analizando...
                                         "application/json"
                                 },
 
-                                body: JSON.stringify({
-                                    mensaje: mensaje
-                                })
+                                body: JSON.stringify(body)
                             }
                         );
 
@@ -84,12 +166,30 @@ Analizando...
 
                     }
 
-                    const tareas =
+                    const data =
                         await response.json();
 
-                    mostrarTareas(
-                        tareas
-                    );
+                    if(accionConfig.tipo === "recordatorios"){
+
+                        mostrarTareas(
+                            data
+                        );
+
+                    }else if(accionConfig.tipo === "tareas-nl"){
+
+                        mostrarResultadoTareasNL(
+                            data
+                        );
+
+                    }else{
+
+                        mostrarRespuestaTexto(
+                            data && data.respuesta
+                                ? data.respuesta
+                                : ""
+                        );
+
+                    }
 
                 }catch(error){
 
@@ -116,12 +216,7 @@ Analizando...
 
                     btnIA.disabled = false;
 
-                    btnIA.innerHTML = `
-
-<i class="fa-solid fa-wand-magic-sparkles"></i>
-Analizar y crear tareas
-
-    `;
+                    actualizarTextoBoton();
 
                 }
 
@@ -211,6 +306,179 @@ tareas creadas correctamente
             });
 
             respuestaIA.innerHTML = html;
+
+        }
+
+        function mostrarRespuestaTexto(
+            texto
+        ){
+
+            const contenido =
+                texto && texto.trim()
+                    ? texto.trim()
+                    : "Sin respuesta";
+
+            respuestaIA.innerHTML = `
+
+<div class="ia-response-card">
+
+    <h3>
+        ✅ Respuesta IA
+    </h3>
+
+    <div class="ia-response-text">
+        ${contenido}
+    </div>
+
+</div>
+
+`;
+
+        }
+
+        function mostrarResultadoTareasNL(
+            resultado
+        ){
+
+            const creadas =
+                resultado && resultado.creadas
+                    ? resultado.creadas
+                    : [];
+
+            const actualizadas =
+                resultado && resultado.actualizadas
+                    ? resultado.actualizadas
+                    : [];
+
+            const completadas =
+                resultado && resultado.completadas
+                    ? resultado.completadas
+                    : [];
+
+            const eliminadas =
+                resultado && resultado.eliminadas
+                    ? resultado.eliminadas
+                    : [];
+
+            const advertencias =
+                resultado && resultado.advertencias
+                    ? resultado.advertencias
+                    : [];
+
+            let html = `
+
+<div class="ia-response-card">
+
+    <h3>
+        ✅ Resultado de acciones
+    </h3>
+
+    <div class="ia-response-text">
+        Creadas: ${creadas.length}\n
+        Actualizadas: ${actualizadas.length}\n
+        Completadas: ${completadas.length}\n
+        Eliminadas: ${eliminadas.length}
+    </div>
+
+</div>
+
+`;
+
+            if(creadas.length){
+                html += renderListaTareas(
+                    "Tareas creadas",
+                    creadas
+                );
+            }
+
+            if(actualizadas.length){
+                html += renderListaTareas(
+                    "Tareas actualizadas",
+                    actualizadas
+                );
+            }
+
+            if(completadas.length){
+                html += renderListaSimple(
+                    "Tareas completadas",
+                    completadas
+                );
+            }
+
+            if(eliminadas.length){
+                html += renderListaSimple(
+                    "Tareas eliminadas",
+                    eliminadas
+                );
+            }
+
+            if(advertencias.length){
+                html += renderListaSimple(
+                    "Advertencias",
+                    advertencias
+                );
+            }
+
+            respuestaIA.innerHTML = html;
+
+        }
+
+        function renderListaTareas(
+            titulo,
+            tareas
+        ){
+
+            let html = `
+
+<div class="ia-response-card">
+    <h3>
+        ${titulo}
+    </h3>
+    <div class="ia-response-text">
+`;
+
+            tareas.forEach(tarea => {
+
+                html += `
+- ${tarea.titulo || "Sin titulo"} | prioridad: ${tarea.prioridad || "MEDIA"} | limite: ${tarea.fechaLimite || "Sin fecha"}\n`;
+
+            });
+
+            html += `
+    </div>
+</div>
+
+`;
+
+            return html;
+
+        }
+
+        function renderListaSimple(
+            titulo,
+            items
+        ){
+
+            let html = `
+
+<div class="ia-response-card">
+    <h3>
+        ${titulo}
+    </h3>
+    <div class="ia-response-text">
+`;
+
+            items.forEach(item => {
+                html += `- ${item}\n`;
+            });
+
+            html += `
+    </div>
+</div>
+
+`;
+
+            return html;
 
         }
 

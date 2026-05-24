@@ -28,3 +28,7 @@ services:
       SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5432/agenda_virtual}"
       SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME:-ADMINISTRADOR}"
       SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD:-123456}"
+      AI_PROVIDER_URL: "${AI_PROVIDER_URL:-http://host.docker.internal:11434}"
+      AI_PROVIDER_MODEL: "${AI_PROVIDER_MODEL:-mistral}"
+
+# (sin volúmenes adicionales)

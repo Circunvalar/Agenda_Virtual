@@ -270,4 +270,55 @@
         padding:16px;
     }
 
+    .ia-form-row{
+        grid-template-columns:1fr;
+    }
+
+}
+
+.ia-form-row{
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:16px;
+
+}
+
+.ia-field{
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+}
+
+.ia-field label{
+
+    font-size:13px;
+    color:var(--text-secondary);
+
+}
+
+.ia-input,
+.ia-select{
+
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--bg-secondary);
+    color:var(--text);
+    padding:12px 14px;
+    font-size:14px;
+    outline:none;
+    transition:.3s;
+
+}
+
+.ia-input:focus,
+.ia-select:focus{
+
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(99,102,241,.15);
+
 }

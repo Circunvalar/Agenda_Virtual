@@ -38,7 +38,10 @@ public class ConfiguracionSeguridad {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/api/**",
+                                "/ia/**",
+                                "/api/ia/**"
                         ).permitAll()
 
                         .requestMatchers("/admin/**")

@@ -12,4 +12,9 @@ public interface TareaRepositorio
 
     List<Tarea> findByCreador(Usuario creador);
     List<Tarea> findByCreador(UUID creador);
+
+    List<Tarea> findByCreadorAndTituloIgnoreCase(
+            Usuario creador,
+            String titulo
+    );
 }

@@ -12,7 +12,7 @@ Pasos para ejecutar la IA local con Ollama
 
    - En Windows, tras instalar Ollama, ejecutar en PowerShell:
 
-     ollama pull llama2
+     ollama pull mistral
      ollama serve
 
    - Por defecto el servidor queda escuchando en http://localhost:11434
@@ -25,8 +25,8 @@ Pasos para ejecutar la IA local con Ollama
 
    - O configurar manualmente:
 
-     setx AI_PROVIDER_URL "http://localhost:11434/api/generate"
-     setx AI_PROVIDER_KEY ""
+     setx AI_PROVIDER_URL "http://localhost:11434/api/chat"
+     setx AI_PROVIDER_MODEL "mistral"
 
 3) Ejecutar la aplicación Spring Boot (desde la raíz del proyecto):
 
@@ -36,16 +36,15 @@ Pasos para ejecutar la IA local con Ollama
 
    - Puede probar el endpoint de Ollama con curl:
 
-     curl -X POST "http://localhost:11434/api/generate" -H "Content-Type: application/json" -d "{ \"model\": \"llama2\", \"prompt\": \"Hola\" }"
+     curl -X POST "http://localhost:11434/api/chat" -H "Content-Type: application/json" -d "{ \"model\": \"mistral\", \"messages\": [{ \"role\": \"user\", \"content\": \"Hola\" }], \"stream\": false }"
 
 Notas sobre el proyecto en la nube (sin IA)
 
-- Para desplegar la versión en nube sin IA, simplemente NO configure `AI_PROVIDER_URL` ni `AI_PROVIDER_KEY` en el entorno de despliegue del servicio. La aplicación cargará la URL por defecto (que apunta a un proveedor en la nube) — si desea asegurarse de que la funcionalidad IA no esté disponible, considere mantener una rama / build separada donde elimine o desactive los endpoints de IA.
+- Para desplegar la versión en nube sin IA, simplemente NO configure `AI_PROVIDER_URL` en el entorno de despliegue del servicio. Si desea asegurarse de que la funcionalidad IA no esté disponible, considere mantener una rama / build separada donde elimine o desactive los endpoints de IA.
 
 - Alternativa práctica: usar variables de entorno distintas por entorno (por ejemplo, tener un `.env` local y otro `.env.cloud`) y cargar el apropiado durante despliegue.
 
 Cambios realizados en el código
 
-- El servicio IA ahora intenta reconocer respuestas en varios formatos (Cohere, Ollama, OpenAI/HF) para mayor compatibilidad con proveedores locales y en la nube.
-- Para usar Ollama local solo es necesario apuntar `AI_PROVIDER_URL` a `http://localhost:11434/api/generate` y no enviar `AI_PROVIDER_KEY`.
-
+- El servicio IA usa solo Ollama local con el endpoint `/api/chat`.
+- Para usar Ollama local solo es necesario apuntar `AI_PROVIDER_URL` a `http://localhost:11434/api/chat` y usar `AI_PROVIDER_MODEL=mistral`.

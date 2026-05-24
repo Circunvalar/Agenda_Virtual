@@ -67,15 +67,47 @@
                 <div>
 
                     <h3>
-                        Describe tus actividades
+                        Asistente inteligente
                     </h3>
 
                     <p>
-                        La IA analizará y creará recordatorios automáticamente
+                        Elige una acción y describe lo que necesitas
                     </p>
 
                 </div>
 
+            </div>
+
+            <div class="ia-form-row">
+                <div class="ia-field">
+                    <label for="iaAccion">
+                        Accion
+                    </label>
+                    <select
+                            id="iaAccion"
+                            class="ia-select"
+                    >
+                        <option value="crear-recordatorios" selected>
+                            Crear recordatorios
+                        </option>
+                        <option value="chat">Chat</option>
+                        <option value="plan-diario">Plan diario</option>
+                        <option value="plan-semanal">Plan semanal</option>
+                        <option value="priorizar">Priorizar tareas</option>
+                        <option value="tareas-nl">Tareas por lenguaje natural</option>
+                    </select>
+                </div>
+                <div class="ia-field">
+                    <label for="preferenciasIA">
+                        Preferencias (opcional)
+                    </label>
+                    <input
+                            id="preferenciasIA"
+                            class="ia-input"
+                            type="text"
+                            placeholder="Ej: prefiero tareas cortas en la manana"
+                    >
+                </div>
             </div>
 
             <textarea

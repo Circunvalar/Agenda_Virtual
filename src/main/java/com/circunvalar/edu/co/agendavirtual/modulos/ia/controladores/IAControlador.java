@@ -127,11 +127,80 @@ public class IAControlador {
     }
 
     @GetMapping("/diagnostico")
-    public ResponseEntity<?> diagnosticoProveedor(){
+    public ResponseEntity<?> diagnosticoOllama() {
 
         return ResponseEntity.ok(
-                iaService.diagnosticarProveedor()
+                iaService.diagnosticarOllama()
         );
+    }
 
+    @PostMapping("/chat")
+    public ResponseEntity<IAChatResponseDTO> chat(
+            @Valid @RequestBody IAChatRequestDTO dto,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                iaService.chatConMemoria(
+                        dto,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PostMapping("/plan-diario")
+    public ResponseEntity<IAChatResponseDTO> planDiario(
+            @RequestBody IAChatRequestDTO dto,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                iaService.generarPlanDiario(
+                        dto,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PostMapping("/plan-semanal")
+    public ResponseEntity<IAChatResponseDTO> planSemanal(
+            @RequestBody IAChatRequestDTO dto,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                iaService.generarPlanSemanal(
+                        dto,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PostMapping("/priorizar")
+    public ResponseEntity<IAChatResponseDTO> priorizar(
+            @RequestBody IAChatRequestDTO dto,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                iaService.priorizarTareas(
+                        dto,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PostMapping("/tareas-nl")
+    public ResponseEntity<IATareaOperacionResultadoDTO> tareasNL(
+            @RequestBody IAChatRequestDTO dto,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                iaService.procesarTareasNL(
+                        dto,
+                        authentication.getName()
+                )
+        );
     }
 }

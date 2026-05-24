@@ -22,9 +22,7 @@ Get-Content $envFile | ForEach-Object {
 }
 
 # Override to use Ollama local API (change port if needed)
-Set-Item -Path Env:\AI_PROVIDER_URL -Value "http://localhost:11434/api/generate"
-# Ensure no cloud API key is set for Ollama local
-Set-Item -Path Env:\AI_PROVIDER_KEY -Value ""
+Set-Item -Path Env:\AI_PROVIDER_URL -Value "http://localhost:11434"
+Set-Item -Path Env:\AI_PROVIDER_MODEL -Value "mistral"
 
 Write-Host "Environment set to use Ollama local at $($Env:AI_PROVIDER_URL)"
-
