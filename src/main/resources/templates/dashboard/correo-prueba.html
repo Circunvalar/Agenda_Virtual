@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html
+        lang="es"
+        xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de correo</title>
+
+    <link rel="stylesheet" th:href="@{/css/dashboard/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/correo-prueba.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        if(localStorage.getItem('theme') === 'dark'){
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body>
+<div class="dashboard-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+
+    <main class="main-content">
+        <div th:replace="~{fragments/topbar :: topbar(
+                    'Prueba de correo',
+                    'Envia un correo de prueba a tu cuenta'
+                )}"></div>
+
+        <div class="correo-card">
+            <h2>Enviar correo de prueba</h2>
+            <p>
+                Este boton envia un correo al email asociado a tu usuario en sesion.
+            </p>
+
+            <div
+                    class="message-alert"
+                    th:if="${mensaje != null}"
+                    th:text="${mensaje}"
+                    th:classappend="${mensajeTipo}"
+            ></div>
+
+            <form th:action="@{/correo/prueba/enviar}" method="post">
+                <button type="submit" class="primary-btn">
+                    Enviar correo
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/dashboard/layout.js}"></script>
+</body>
+</html>
+

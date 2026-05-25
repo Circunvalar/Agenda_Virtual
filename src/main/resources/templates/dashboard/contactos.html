@@ -85,6 +85,11 @@
                         name="telefono"
                         placeholder="Número telefónico"
                         class="input-style"
+                        inputmode="numeric"
+                        pattern="\d{10}"
+                        minlength="10"
+                        maxlength="10"
+                        title="Número celular colombiano (10 dígitos, solo números)"
                         required
                 >
 
@@ -103,6 +108,7 @@
                     th:if="${mensaje != null}"
                     th:text="${mensaje}"
                     class="message-alert"
+                    th:classappend="${mensajeTipo}"
             ></div>
 
         </div>

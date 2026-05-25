@@ -142,9 +142,24 @@
                         <span th:text="${evento.horaFin}"></span>
                     </span>
 
+                    <span th:if="${evento.todoElDia}">
+                        ⏰ Aviso: 8pm día anterior
+                    </span>
+
+                    <span th:if="${!evento.todoElDia}">
+                        ⏰ Avisar
+                        <span th:text="${evento.recordarAntesMinutos}"></span>
+                        min antes
+                    </span>
+
                     <span>
                         📍
                         <span th:text="${evento.ubicacion}"></span>
+                    </span>
+
+                    <span>
+                        👥 Invitados:
+                        <span th:text="${#lists.size(evento.invitadosIds)}"></span>
                     </span>
 
                     <span
@@ -169,7 +184,9 @@
                             data-todoeldia=${evento.todoElDia},
                             data-ubicacion=${evento.ubicacion},
                             data-color=${evento.color},
-                            data-estado=${evento.estado}
+                            data-estado=${evento.estado},
+                            data-recordarantes=${evento.recordarAntesMinutos},
+                            data-invitados=${#strings.listJoin(evento.invitadosIds, ',')}
                         "
                             onclick="openEditModal(this)"
                     >
@@ -309,6 +326,24 @@
 
                 <div class="form-group">
 
+                    <label>Recordar antes (min)</label>
+
+                    <input
+                            type="number"
+                            name="recordarAntesMinutos"
+                            class="form-input"
+                            min="0"
+                            placeholder="30"
+                    >
+
+                    <small class="help-text">
+                        Si es todo el día, se avisa el día anterior a las 8:00 pm.
+                    </small>
+
+                </div>
+
+                <div class="form-group">
+
                     <label>Ubicación</label>
 
                     <input
@@ -367,6 +402,42 @@
                         </label>
 
                     </div>
+
+                </div>
+
+                <div class="form-group form-group-full">
+
+                    <label>Invitados</label>
+
+                    <div
+                            class="invite-list"
+                            th:if="${!#lists.isEmpty(contactos)}"
+                    >
+
+                        <label
+                                class="invite-item"
+                                th:each="contacto : ${contactos}"
+                        >
+
+                            <input
+                                    type="checkbox"
+                                    name="invitadosIds"
+                                    th:value="${contacto.contacto.id}"
+                            >
+
+                            <span th:text="${contacto.contacto.nombreDeUsuario}"></span>
+                            <small th:text="${contacto.contacto.telefono}"></small>
+
+                        </label>
+
+                    </div>
+
+                    <p
+                            class="invite-empty"
+                            th:if="${#lists.isEmpty(contactos)}"
+                    >
+                        No tienes contactos para invitar.
+                    </p>
 
                 </div>
 
@@ -510,6 +581,25 @@
 
                 <div class="form-group">
 
+                    <label>Recordar antes (min)</label>
+
+                    <input
+                            type="number"
+                            name="recordarAntesMinutos"
+                            id="editRecordarAntes"
+                            class="form-input"
+                            min="0"
+                            placeholder="30"
+                    >
+
+                    <small class="help-text">
+                        Si es todo el día, se avisa el día anterior a las 8:00 pm.
+                    </small>
+
+                </div>
+
+                <div class="form-group">
+
                     <label>Ubicación</label>
 
                     <input
@@ -573,6 +663,42 @@
 
                 </div>
 
+                <div class="form-group form-group-full">
+
+                    <label>Invitados</label>
+
+                    <div
+                            class="invite-list"
+                            th:if="${!#lists.isEmpty(contactos)}"
+                    >
+
+                        <label
+                                class="invite-item"
+                                th:each="contacto : ${contactos}"
+                        >
+
+                            <input
+                                    type="checkbox"
+                                    name="invitadosIds"
+                                    th:value="${contacto.contacto.id}"
+                            >
+
+                            <span th:text="${contacto.contacto.nombreDeUsuario}"></span>
+                            <small th:text="${contacto.contacto.telefono}"></small>
+
+                        </label>
+
+                    </div>
+
+                    <p
+                            class="invite-empty"
+                            th:if="${#lists.isEmpty(contactos)}"
+                    >
+                        No tienes contactos para invitar.
+                    </p>
+
+                </div>
+
             </div>
 
             <div class="modal-actions">
@@ -610,4 +736,3 @@
 
 </body>
 </html>
-

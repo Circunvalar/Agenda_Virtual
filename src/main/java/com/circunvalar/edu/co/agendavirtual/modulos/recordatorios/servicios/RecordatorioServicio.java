@@ -1,5 +1,6 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.servicios;
 
+import com.circunvalar.edu.co.agendavirtual.compartido.servicios.EmailServicio;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioRequestDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.dtos.RecordatorioResponseDTO;
 import com.circunvalar.edu.co.agendavirtual.modulos.recordatorios.entidades.CategoriaRecordatorio;
@@ -29,6 +30,8 @@ public class RecordatorioServicio {
     private final RecordatorioRepositorio recordatorioRepositorio;
 
     private final UsuarioRepositorio usuarioRepositorio;
+
+    private final EmailServicio emailServicio;
 
     /**
      * Crea un recordatorio y lo asocia al usuario autenticado.
@@ -133,8 +136,9 @@ public class RecordatorioServicio {
 
         List<Recordatorio> recordatorios =
                 recordatorioRepositorio
-                        .findByCreadorAndArchivadoFalseOrderByFechaLimiteAsc(
-                                usuario
+                        .findVisiblesWithInvitados(
+                                usuario,
+                                LocalDateTime.now()
                         );
 
         return recordatorios.stream()
@@ -215,6 +219,10 @@ public class RecordatorioServicio {
 
             recordatorio.setInvitados(invitados);
 
+        } else {
+
+            recordatorio.setInvitados(Collections.emptyList());
+
         }
 
         recordatorioRepositorio.save(recordatorio);
@@ -293,7 +301,7 @@ public class RecordatorioServicio {
     public List<Recordatorio> obtenerPendientes() {
 
         return recordatorioRepositorio
-                .findByNotificadoFalseAndArchivadoFalseAndCompletadoFalse();
+                .findPendientesNotificacionWithCreador();
 
     }
 
@@ -322,9 +330,24 @@ public class RecordatorioServicio {
                     recordatorio.getTitulo()
             );
 
-            recordatorio.setNotificado(true);
+            Usuario creador = recordatorio.getCreador();
+            String correo = creador != null
+                    ? creador.getCorreoElectronico()
+                    : null;
 
-            recordatorio.setUltimaNotificacion(ahora);
+            String asunto = "Recordatorio: " + recordatorio.getTitulo();
+            String contenido = construirMensajeRecordatorio(recordatorio);
+
+            boolean enviado = emailServicio.enviarCorreo(
+                    correo,
+                    asunto,
+                    contenido
+            );
+
+            if(enviado){
+                recordatorio.setNotificado(true);
+                recordatorio.setUltimaNotificacion(ahora);
+            }
 
             if (
                     Boolean.TRUE.equals(
@@ -333,6 +356,8 @@ public class RecordatorioServicio {
             ) {
 
                 actualizarSiguienteFecha(recordatorio);
+
+                recordatorio.setCompletado(false);
 
             } else {
 
@@ -461,8 +486,34 @@ public class RecordatorioServicio {
                 .estadoVisual(
                         calcularEstadoVisual(recordatorio)
                 )
+                .invitadosIds(
+                        recordatorio.getInvitados() == null
+                                ? List.of()
+                                : recordatorio.getInvitados().stream()
+                                .map(Usuario::getId)
+                                .toList()
+                )
                 .build();
 
+    }
+
+    private String construirMensajeRecordatorio(
+            Recordatorio recordatorio
+    ) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Hola, este es tu recordatorio.\n\n");
+        sb.append("Titulo: ").append(recordatorio.getTitulo()).append("\n");
+
+        if(recordatorio.getMensaje() != null && !recordatorio.getMensaje().isBlank()){
+            sb.append("Detalle: ").append(recordatorio.getMensaje()).append("\n");
+        }
+
+        sb.append("Fecha limite: ")
+                .append(recordatorio.getFechaLimite())
+                .append("\n");
+
+        return sb.toString();
     }
 
     /**

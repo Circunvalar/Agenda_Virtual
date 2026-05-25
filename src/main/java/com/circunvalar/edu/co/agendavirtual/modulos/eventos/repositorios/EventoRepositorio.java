@@ -52,4 +52,21 @@ public interface EventoRepositorio
             @Param("usuarioId") UUID usuarioId,
             @Param("contactoId") UUID contactoId
     );
+
+    @Query("""
+        SELECT DISTINCT e
+        FROM Evento e
+        LEFT JOIN FETCH e.invitados i
+        WHERE e.creador = :creador
+    """)
+    List<Evento> findByCreadorWithInvitados(@Param("creador") Usuario creador);
+
+    @Query("""
+        SELECT DISTINCT e
+        FROM Evento e
+        LEFT JOIN FETCH e.creador c
+        WHERE (e.notificado = false OR e.notificado IS NULL)
+        AND e.estado <> com.circunvalar.edu.co.agendavirtual.modulos.eventos.entidades.EstadoEvento.CANCELADO
+    """)
+    List<Evento> findPendientesNotificacion();
 }

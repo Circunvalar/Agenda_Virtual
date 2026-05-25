@@ -184,6 +184,41 @@ body{
     box-shadow:0 0 0 4px rgba(79,70,229,.12);
 }
 
+.input-style.is-invalid{
+    border-color:#ef4444;
+    box-shadow:0 0 0 3px rgba(239,68,68,.15);
+}
+
+.input-message{
+    margin-top:8px;
+    min-height:18px;
+    font-size:.85rem;
+    color:var(--text-muted);
+}
+
+.input-message.error{
+    color:#fecaca;
+}
+
+.form-alert{
+    margin:0 0 14px;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:.95rem;
+}
+
+.form-alert.error{
+    background:rgba(239,68,68,.12);
+    color:#fecaca;
+    border:1px solid rgba(239,68,68,.35);
+}
+
+.form-alert.success{
+    background:rgba(16,185,129,.12);
+    color:#a7f3d0;
+    border:1px solid rgba(16,185,129,.35);
+}
+
 .submit-btn{
     width:100%;
 

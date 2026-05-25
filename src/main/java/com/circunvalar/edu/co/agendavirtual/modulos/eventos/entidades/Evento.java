@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -40,6 +41,16 @@ public class Evento extends EntidadBase {
     private String ubicacion;
 
     private String color;
+
+    @Column
+    @Builder.Default
+    private Integer recordarAntesMinutos = 30;
+
+    @Column
+    @Builder.Default
+    private Boolean notificado = false;
+
+    private LocalDateTime ultimaNotificacion;
 
     @Enumerated(EnumType.STRING)
     private EstadoEvento estado;

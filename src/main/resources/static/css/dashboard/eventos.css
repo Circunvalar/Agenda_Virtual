@@ -69,6 +69,12 @@
     position:relative;
     box-shadow:0 10px 30px rgba(0,0,0,0.08);
     border:1px solid rgba(255,255,255,0.08);
+    transition:transform .2s ease, box-shadow .2s ease;
+}
+
+.event-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 22px rgba(0,0,0,.15);
 }
 
 .event-color{
@@ -89,12 +95,25 @@
     margin-bottom:18px;
 }
 
+.help-text{
+    display:block;
+    margin-top:6px;
+    color:var(--text-secondary);
+    font-size:0.85rem;
+}
+
 .event-info{
     display:flex;
     flex-direction:column;
     gap:10px;
     font-size:0.95rem;
     margin-bottom:20px;
+}
+
+.event-info span{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
 }
 
 .event-badge{
@@ -231,4 +250,43 @@
         flex-direction:column;
     }
 
+}
+
+.invite-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:12px;
+}
+
+.invite-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid #d1d5db;
+    background:#f8fafc;
+    color:#111827;
+}
+
+.invite-item small{
+    margin-left:auto;
+    color:#6b7280;
+    font-size:0.8rem;
+}
+
+.dark .invite-item{
+    background:#1f2937;
+    border:1px solid #374151;
+    color:white;
+}
+
+.dark .invite-item small{
+    color:#9ca3af;
+}
+
+.invite-empty{
+    margin-top:8px;
+    color:#6b7280;
+    font-size:0.9rem;
 }

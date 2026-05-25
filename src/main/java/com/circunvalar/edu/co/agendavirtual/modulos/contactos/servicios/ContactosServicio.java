@@ -1,6 +1,7 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.contactos.servicios;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.contactos.dtos.ContactoResponseDTO;
+import com.circunvalar.edu.co.agendavirtual.modulos.contactos.dtos.ContactoResultado;
 import com.circunvalar.edu.co.agendavirtual.modulos.contactos.entidades.Contactos;
 import com.circunvalar.edu.co.agendavirtual.modulos.contactos.repositorios.ContactosRepositorio;
 import com.circunvalar.edu.co.agendavirtual.modulos.eventos.repositorios.EventoRepositorio;
@@ -26,22 +27,44 @@ public class ContactosServicio {
     /**
      * Agrega un contacto por telefono y evita duplicados.
      */
-    public String agregarContacto(
+    public ContactoResultado agregarContacto(
             String telefono,
             String username
     ) {
+
+        if(telefono == null || telefono.isBlank()){
+            return ContactoResultado.error(
+                    "Debes ingresar un numero de telefono."
+            );
+        }
+
+        String telefonoLimpio = telefono.replaceAll("\\D", "");
+
+        if(telefonoLimpio.length() != 10){
+            return ContactoResultado.error(
+                    "El numero debe tener 10 digitos."
+            );
+        }
 
         Usuario usuario = usuarioRepositorio
                 .findByNombreDeUsuario(username)
                 .orElseThrow();
 
         Usuario contactoUsuario = usuarioRepositorio
-                .findByTelefono(telefono)
-                .orElseThrow();
+                .findByTelefono(telefonoLimpio)
+                .orElse(null);
+
+        if(contactoUsuario == null){
+            return ContactoResultado.error(
+                    "No se encontro un usuario con ese numero."
+            );
+        }
 
         // NO AGREGARSE A SI MISMO
         if(usuario.getId().equals(contactoUsuario.getId())){
-            return "No puedes agregarte a ti mismo como contacto.";
+            return ContactoResultado.error(
+                    "No puedes agregarte a ti mismo como contacto."
+            );
         }
 
         // EVITAR DUPLICADOS
@@ -49,7 +72,9 @@ public class ContactosServicio {
                 usuario,
                 contactoUsuario
         )){
-            return "Este contacto ya está agregado.";
+            return ContactoResultado.error(
+                    "Este contacto ya esta agregado."
+            );
         }
 
         Contactos contacto = Contactos.builder()
@@ -59,7 +84,9 @@ public class ContactosServicio {
 
         contactosRepositorio.save(contacto);
 
-        return "Contacto agregado correctamente.";
+        return ContactoResultado.ok(
+                "Contacto agregado correctamente."
+        );
     }
 
     /**

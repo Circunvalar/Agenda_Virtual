@@ -366,7 +366,8 @@
                                         data-color=${recordatorio.color},
                                         data-repetitivo=${recordatorio.repetitivo},
                                         data-intervalodias=${recordatorio.intervaloDias},
-                                        data-recordarantes=${recordatorio.recordarAntesMinutos}
+                                        data-recordarantes=${recordatorio.recordarAntesMinutos},
+                                        data-invitados=${#strings.listJoin(recordatorio.invitadosIds, ',')}
                                     "
                             >
                                 Editar
@@ -608,6 +609,44 @@
                             name="intervaloDias"
                             class="form-input"
                     >
+
+                </div>
+
+                <div class="form-group full">
+
+                    <label>
+                        Invitados
+                    </label>
+
+                    <div
+                            class="invite-list"
+                            th:if="${!#lists.isEmpty(contactos)}"
+                    >
+
+                        <label
+                                class="invite-item"
+                                th:each="contacto : ${contactos}"
+                        >
+
+                            <input
+                                    type="checkbox"
+                                    name="invitadosIds"
+                                    th:value="${contacto.contacto.id}"
+                            >
+
+                            <span th:text="${contacto.contacto.nombreDeUsuario}"></span>
+                            <small th:text="${contacto.contacto.telefono}"></small>
+
+                        </label>
+
+                    </div>
+
+                    <p
+                            class="invite-empty"
+                            th:if="${#lists.isEmpty(contactos)}"
+                    >
+                        No tienes contactos para invitar.
+                    </p>
 
                 </div>
 
@@ -853,6 +892,44 @@
                             name="intervaloDias"
                             class="form-input"
                     >
+
+                </div>
+
+                <div class="form-group full">
+
+                    <label>
+                        Invitados
+                    </label>
+
+                    <div
+                            class="invite-list"
+                            th:if="${!#lists.isEmpty(contactos)}"
+                    >
+
+                        <label
+                                class="invite-item"
+                                th:each="contacto : ${contactos}"
+                        >
+
+                            <input
+                                    type="checkbox"
+                                    name="invitadosIds"
+                                    th:value="${contacto.contacto.id}"
+                            >
+
+                            <span th:text="${contacto.contacto.nombreDeUsuario}"></span>
+                            <small th:text="${contacto.contacto.telefono}"></small>
+
+                        </label>
+
+                    </div>
+
+                    <p
+                            class="invite-empty"
+                            th:if="${#lists.isEmpty(contactos)}"
+                    >
+                        No tienes contactos para invitar.
+                    </p>
 
                 </div>
 

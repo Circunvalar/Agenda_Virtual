@@ -31,6 +31,8 @@ public class EventoRequestDTO {
 
     private String color;
 
+    private Integer recordarAntesMinutos;
+
     private EstadoEvento estado;
 
     /*

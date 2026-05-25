@@ -7,6 +7,38 @@ const createForm =
 const editForm =
     document.getElementById('editForm');
 
+function parseInvitados(value){
+
+    if(!value){
+        return [];
+    }
+
+    return value
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+
+}
+
+function setInvitados(form, invitadosValue){
+
+    if(!form){
+        return;
+    }
+
+    const invitados = parseInvitados(invitadosValue);
+
+    const checkboxes =
+        form.querySelectorAll('input[name="invitadosIds"]');
+
+    checkboxes.forEach(checkbox => {
+
+        checkbox.checked = invitados.includes(checkbox.value);
+
+    });
+
+}
+
 createForm.addEventListener(
     'input',
     () => createChanged = true
@@ -18,6 +50,12 @@ editForm.addEventListener(
 );
 
 function openCreateModal(){
+
+    if(createForm){
+        createForm.reset();
+        setInvitados(createForm, '');
+        createChanged = false;
+    }
 
     document.getElementById(
         'createModal'
@@ -52,13 +90,9 @@ function openEditModal(button){
         'editFechaFin'
     ).value = button.dataset.fechafin;
 
-    document.getElementById(
-        'editHoraInicio'
-    ).value = button.dataset.horainicio || '';
-
-    document.getElementById(
-        'editHoraFin'
-    ).value = button.dataset.horafin || '';
+    setValue('editHoraInicio', button.dataset.horainicio || '');
+    setValue('editHoraFin', button.dataset.horafin || '');
+    setValue('editRecordarAntes', button.dataset.recordarantes || 30);
 
     document.getElementById(
         'editUbicacion'
@@ -79,6 +113,8 @@ function openEditModal(button){
         button.dataset.todoeldia === 'true';
 
     toggleHoras(checkbox);
+
+    setInvitados(editForm, button.dataset.invitados);
 
     modal.style.display = 'flex';
 
@@ -183,3 +219,7 @@ document
         });
 
     });
+
+function setValue(id, value){
+    document.getElementById(id).value = value;
+}

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,4 +42,6 @@ public class RecordatorioResponseDTO {
     private String color;
 
     private String estadoVisual;
+
+    private List<UUID> invitadosIds;
 }

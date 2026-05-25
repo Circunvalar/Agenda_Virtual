@@ -73,6 +73,16 @@
     font-weight:600;
 }
 
+.message-alert.success{
+    background:rgba(16,185,129,.12);
+    color:#10b981;
+}
+
+.message-alert.error{
+    background:rgba(239,68,68,.12);
+    color:#ef4444;
+}
+
 /* VACIO */
 
 .empty-card{

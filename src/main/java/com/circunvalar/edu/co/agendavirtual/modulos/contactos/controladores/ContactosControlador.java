@@ -1,6 +1,7 @@
 package com.circunvalar.edu.co.agendavirtual.modulos.contactos.controladores;
 
 import com.circunvalar.edu.co.agendavirtual.modulos.contactos.servicios.ContactosServicio;
+import com.circunvalar.edu.co.agendavirtual.modulos.contactos.dtos.ContactoResultado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -49,14 +50,19 @@ public class ContactosControlador {
             RedirectAttributes redirectAttributes
     ) {
 
-        String mensaje = contactoServicio.agregarContacto(
+        ContactoResultado resultado = contactoServicio.agregarContacto(
                 telefono,
                 auth.getName()
         );
 
         redirectAttributes.addFlashAttribute(
                 "mensaje",
-                mensaje
+                resultado.getMensaje()
+        );
+
+        redirectAttributes.addFlashAttribute(
+                "mensajeTipo",
+                resultado.getTipo()
         );
 
         return "redirect:/contactos";

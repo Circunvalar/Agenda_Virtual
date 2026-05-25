@@ -3,13 +3,40 @@
     const form = document.querySelector('.auth-card');
     if(!form) return;
 
+    const nameInput = document.getElementById('nombre');
     const passwordInput = document.getElementById('password');
     const phoneInput = document.getElementById('telefono');
     const emailInput = document.getElementById('email');
+    const usernameInput = document.getElementById('username');
     const formErrors = document.getElementById('formErrors');
     const strengthBar = document.getElementById('passwordStrength');
     const togglePasswordBtn = document.getElementById('togglePassword');
     const passwordConfirm = document.getElementById('passwordConfirm');
+
+    const nameError = document.getElementById('nombreError');
+    const emailError = document.getElementById('emailError');
+    const phoneError = document.getElementById('telefonoError');
+    const usernameError = document.getElementById('usernameError');
+    const passwordError = document.getElementById('passwordError');
+    const passwordConfirmError = document.getElementById('passwordConfirmError');
+
+    function setFieldError(input, errorEl, message){
+        if(!input) return true;
+        if(message){
+            input.classList.add('is-invalid');
+            if(errorEl){
+                errorEl.textContent = message;
+                errorEl.classList.add('error');
+            }
+            return false;
+        }
+        input.classList.remove('is-invalid');
+        if(errorEl){
+            errorEl.textContent = '';
+            errorEl.classList.remove('error');
+        }
+        return true;
+    }
 
     // Helpers
     function scorePassword(pw){
@@ -42,15 +69,37 @@
         phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0,10);
     }
 
+    function validateName(){
+        if(!nameInput) return true;
+        const val = (nameInput.value || '').trim();
+        if(val.length < 3){
+            nameInput.setCustomValidity('El nombre debe tener al menos 3 caracteres.');
+            return setFieldError(nameInput, nameError, 'El nombre debe tener al menos 3 caracteres.');
+        }
+        nameInput.setCustomValidity('');
+        return setFieldError(nameInput, nameError, '');
+    }
+
+    function validateUsername(){
+        if(!usernameInput) return true;
+        const val = (usernameInput.value || '').trim();
+        if(val.length < 3){
+            usernameInput.setCustomValidity('El usuario debe tener al menos 3 caracteres.');
+            return setFieldError(usernameInput, usernameError, 'El usuario debe tener al menos 3 caracteres.');
+        }
+        usernameInput.setCustomValidity('');
+        return setFieldError(usernameInput, usernameError, '');
+    }
+
     function validatePhone(){
         if(!phoneInput) return true;
         const val = phoneInput.value || '';
         if(val.length !== 10){
             phoneInput.setCustomValidity('El número debe tener exactamente 10 dígitos (ej: 3101234567).');
-            return false;
+            return setFieldError(phoneInput, phoneError, 'El teléfono debe tener 10 dígitos.');
         }
         phoneInput.setCustomValidity('');
-        return true;
+        return setFieldError(phoneInput, phoneError, '');
     }
 
     function validatePassword(){
@@ -59,10 +108,10 @@
         const ok = /(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/.test(val);
         if(!ok){
             passwordInput.setCustomValidity('La contraseña no cumple los requisitos de seguridad.');
-            return false;
+            return setFieldError(passwordInput, passwordError, 'La contraseña no cumple los requisitos.');
         }
         passwordInput.setCustomValidity('');
-        return true;
+        return setFieldError(passwordInput, passwordError, '');
     }
 
     function validatePasswordMatch(){
@@ -71,10 +120,10 @@
         const b = passwordConfirm.value || '';
         if(a !== b){
             passwordConfirm.setCustomValidity('Las contraseñas no coinciden.');
-            return false;
+            return setFieldError(passwordConfirm, passwordConfirmError, 'Las contraseñas no coinciden.');
         }
         passwordConfirm.setCustomValidity('');
-        return true;
+        return setFieldError(passwordConfirm, passwordConfirmError, '');
     }
 
     function validateEmail(){
@@ -85,21 +134,29 @@
         const ok = re.test(val);
         if(!ok){
             emailInput.setCustomValidity('Introduce un correo válido.');
-            return false;
+            return setFieldError(emailInput, emailError, 'Introduce un correo válido.');
         }
         emailInput.setCustomValidity('');
-        return true;
+        return setFieldError(emailInput, emailError, '');
     }
 
     function gatherErrors(){
         const errors = [];
+        if(!validateName()) errors.push('Nombre inválido.');
         if(!validateEmail()) errors.push('Correo inválido.');
         if(!validatePhone()) errors.push('Teléfono inválido (10 dígitos).');
+        if(!validateUsername()) errors.push('Usuario inválido.');
         if(!validatePassword()) errors.push('Contraseña insegura.');
+        if(!validatePasswordMatch()) errors.push('Las contraseñas no coinciden.');
         return errors;
     }
 
     // Listeners
+    if(nameInput){
+        nameInput.addEventListener('input', validateName);
+        nameInput.addEventListener('blur', validateName);
+    }
+
     if(passwordInput){
         passwordInput.addEventListener('input', ()=>{
             updateStrength();
@@ -124,6 +181,11 @@
         emailInput.addEventListener('blur', validateEmail);
     }
 
+    if(usernameInput){
+        usernameInput.addEventListener('input', validateUsername);
+        usernameInput.addEventListener('blur', validateUsername);
+    }
+
     if(passwordConfirm){
         passwordConfirm.addEventListener('input', validatePasswordMatch);
         passwordConfirm.addEventListener('blur', validatePasswordMatch);
@@ -141,10 +203,11 @@
     }
 
     form.addEventListener('submit', function(e){
-        formErrors.style.display = 'none';
+        if(formErrors){
+            formErrors.style.display = 'none';
+            formErrors.textContent = '';
+        }
         const errors = gatherErrors();
-        // validate password match explicitly
-        if(!validatePasswordMatch()) errors.push('Las contraseñas no coinciden.');
         // also check native validity
         if(!form.checkValidity() || errors.length){
             e.preventDefault();
@@ -156,8 +219,10 @@
                 if(invalid && invalid.validationMessage) nativeMsg.push(invalid.validationMessage);
             }
             const all = nativeMsg.concat(errors);
-            formErrors.innerText = all.join(' ');
-            formErrors.style.display = 'block';
+            if(formErrors){
+                formErrors.innerText = all.join(' ');
+                formErrors.style.display = 'block';
+            }
             // show browser built-in messages for the first invalid field
             const firstInvalid = form.querySelector(':invalid');
             if(firstInvalid && typeof firstInvalid.reportValidity === 'function'){
@@ -171,6 +236,11 @@
 
     // initialize strength bar state in case of prefilled values
     updateStrength();
+    validateName();
+    validateEmail();
+    validatePhone();
+    validateUsername();
+    validatePassword();
+    validatePasswordMatch();
 })();
-
 

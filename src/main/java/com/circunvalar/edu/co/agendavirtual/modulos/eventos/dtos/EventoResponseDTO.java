@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -34,5 +35,9 @@ public class EventoResponseDTO {
 
     private String color;
 
+    private Integer recordarAntesMinutos;
+
     private EstadoEvento estado;
+
+    private List<UUID> invitadosIds;
 }

@@ -58,6 +58,16 @@
             tus tareas, contactos y eventos.
         </p>
 
+        <div class="form-alert error" th:if="${param.error}">
+            Usuario o contraseña inválidos.
+        </div>
+
+        <div class="form-alert success" th:if="${param.logout}">
+            Sesión cerrada correctamente.
+        </div>
+
+        <div id="loginErrors" class="form-alert error" style="display:none;"></div>
+
         <div class="input-group">
 
             <label class="input-label">
@@ -65,12 +75,15 @@
             </label>
 
             <input
+                    id="username"
                     type="text"
                     name="username"
                     placeholder="Ingresa tu usuario"
                     class="input-style"
                     required
             >
+
+            <div id="usernameError" class="input-message" aria-live="polite"></div>
 
         </div>
 
@@ -81,12 +94,15 @@
             </label>
 
             <input
+                    id="password"
                     type="password"
                     name="password"
                     placeholder="Ingresa tu contraseña"
                     class="input-style"
                     required
             >
+
+            <div id="passwordError" class="input-message" aria-live="polite"></div>
 
         </div>
 
@@ -112,6 +128,7 @@
 </div>
 
 <script th:src="@{/js/auth/auth.js}"></script>
+<script th:src="@{/js/auth/login-validate.js}"></script>
 
 </body>
 </html>

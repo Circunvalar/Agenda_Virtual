@@ -127,6 +127,8 @@ function openEditModal(button){
         toggleRepeatFields('edit', editRepetitivoCheckbox.checked);
     }
 
+    setInvitados(editForm, data.invitados);
+
 }
 
 function closeModal(modal){
@@ -254,6 +256,47 @@ function formatDateTimeLocal(dateString){
 
 }
 
+function parseInvitados(value){
+
+    if(!value){
+        return [];
+    }
+
+    return value
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+
+}
+
+function setInvitados(form, invitadosValue){
+
+    if(!form){
+        return;
+    }
+
+    const invitados = parseInvitados(invitadosValue);
+
+    const select = form.querySelector('select[name="invitadosIds"]');
+
+    if(select){
+        Array.from(select.options).forEach(option => {
+            option.selected = invitados.includes(option.value);
+        });
+        return;
+    }
+
+    const checkboxes =
+        form.querySelectorAll('input[name="invitadosIds"]');
+
+    checkboxes.forEach(checkbox => {
+
+        checkbox.checked = invitados.includes(checkbox.value);
+
+    });
+
+}
+
 /* =========================
    RESET FORMS
 ========================= */
@@ -263,6 +306,7 @@ function resetCreateForm(){
     if(createForm){
 
         createForm.reset();
+        setInvitados(createForm, '');
 
         createChanged = false;
 
@@ -275,6 +319,7 @@ function resetEditForm(){
     if(editForm){
 
         editForm.reset();
+        setInvitados(editForm, '');
 
         editChanged = false;
 
@@ -538,4 +583,3 @@ window.addEventListener('keydown', e => {
     }
 
 });
-
